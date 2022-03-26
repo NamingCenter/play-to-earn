@@ -12,21 +12,26 @@ router.post("/", async (req, res, next) => {
   const user = await User.findOne({ where: { address: "ad3" } });
   console.log(await user);
 
-  await nft.addLiker(user);
-
-  const nfts = await Nfts.findOne({
-    where: { tokenId: 1 },
-    include: [
-      {
-        model: User,
-        attributes: ["id", "address"],
-        as: "Liker",
-      },
-    ],
-  });
-  console.log(await nfts.getDataValue("Liker"));
-
-  res.json({ message: "ok" });
+  try {
+    const hate = await Nfts.findOne({
+      where: { userId: userId, tokenId: tokenId },
+    });
+    if (!hate) {
+      Nfts.create({
+        userId: userId,
+        tokenId: tokenId,
+      });
+    } else {
+      Nfts.destroy({
+        userId: userId,
+        tokenId: tokenId,
+      });
+    }
+    return res.json({ message: "ok" });
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
 });
 
 module.exports = router;
