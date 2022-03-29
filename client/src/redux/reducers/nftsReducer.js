@@ -19,9 +19,13 @@ export default function (state = initialState, action) {
       return state;
   }
 }
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 // NftReducer.js 수정
 =======
 // NftReducer.js 수정
 >>>>>>> 4ca3e93 (Update NftsReducer.js)
+=======
+// git commit
+>>>>>>> 8d54a32 (nftReducer / upperCase)
