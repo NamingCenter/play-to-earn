@@ -9,7 +9,7 @@ module.exports = class User extends Sequelize.Model {
         address: {
           type: Sequelize.STRING(200),
           allowNull: true,
-          unique: true, // unique: true - 고유하게
+          unique: true,
         },
         nick: {
           type: Sequelize.STRING(15),
