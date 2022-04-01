@@ -55,7 +55,38 @@ const NftDetails = (props) => {
     gettokenuri(card_id);
   }, [CreateNFTContract]);
 
-  const viewCount = async () => {
+  useEffect(async () => {
+    await axios
+      .post(`http://localhost:5000/nfts/countoflike`, {
+        tokenId: card_id,
+      })
+      .then((res) => {
+        setLike(res.data.count);
+      });
+  }, []);
+
+  useEffect(async () => {
+    await axios
+      .post(`http://localhost:5000/nfts/views`, {
+        tokenId: card_id,
+      })
+      .then((res) => {
+        console.log(res.data.view);
+        setView(res.data.view);
+      });
+  }, []);
+
+  // function likeBtn() {
+  //   if (likeActive) {
+  //     setLikeActive(false);
+  //     setLike(like - 1);
+  //   } else {
+  //     setLikeActive(true);
+  //     setLike(like + 1);
+  //   }
+  // }
+
+  function viewBtn() {
     if (viewActive) {
       setViewActive(false);
     } else {
