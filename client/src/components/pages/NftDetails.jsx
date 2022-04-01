@@ -73,6 +73,7 @@ const NftDetails = (props) => {
       .then((res) => {
         console.log(res.data.view);
         setView(res.data.view);
+        setView(res.data.view + 1);
       });
   }, []);
 
