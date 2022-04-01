@@ -31,43 +31,29 @@ const NftDetails = (props) => {
 
   // test
   const sendLike = async () => {
+    // const tokenId = 1;
+    // const userAdd = "ad1";
+    if (likeActive) {
+      setLikeActive(false);
+      setLike(like - 1);
+    } else {
+      setLikeActive(true);
+      setLike(like + 1);
+    }
     await axios
-      .post(`http://localhost:5000/nfts/like`, {
-        tokenId: card_id,
-        account: account,
-      })
+      .post(`http://localhost:5000/nfts`, { id: card_id, account: account })
       .then((res) => {
         console.log(res.data.message);
-        if (res.data.message === "ok") {
-          setLike(like + 1);
-          alert("좋아요 등록 완료");
-        } else {
-          setLike(like - 1);
-          alert("좋아요 취소 ㅠㅠ");
-        }
+        setLike(like + 1);
+        alert("좋아요 등록 완료");
       });
   };
 
   // test
 
   useEffect(async () => {
-    if (CreateNFTContract !== null) {
-      gettokenuri(card_id);
-    } else {
-      return;
-    }
+    gettokenuri(card_id);
   }, [CreateNFTContract]);
-
-  useEffect(async () => {
-    console.log(card_id);
-    await axios
-      .post(`http://localhost:5000/nfts/countoflike`, {
-        tokenId: card_id,
-      })
-      .then((res) => {
-        setLike(res.data.count);
-      });
-  }, []);
 
   // function likeBtn() {
   //   if (likeActive) {

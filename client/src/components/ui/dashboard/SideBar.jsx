@@ -162,6 +162,7 @@ const SideBar = () => {
     return (
       <div className="slide__container">
         <div className="pfpside__box">
+          {/* 여기부터 프로필 이미지 수정 */}
           <div className="profile__pic">
             <button id="select__pfp" onClick={() => setEditProfileModal(true)}>
               <label className="-label">
@@ -169,7 +170,8 @@ const SideBar = () => {
                 <span>Change Profile</span>
               </label>
               <img
-                src=""
+                className="pfp__iamge"
+                src={pfpImg}
                 id="upload__pfp"
                 // onChange="loadFile(event)"
                 alt="edit"
@@ -179,13 +181,7 @@ const SideBar = () => {
               <EditProfile setShowModal={setEditProfileModal} />
             )}
           </div>
-
-          {/* <img
-          className="pfp__iamge"
-          src={pfpImg}
-          alt="pfp"
-          // style={{ position: "absolute", width: "40px" }}
-        /> */}
+          {/* 여기서부터 닉넴 이메일 수정 */}
           <div className="mypfp__Container">
             <div className="nick__pfp" id="nick__pfp">
               {nickname}
