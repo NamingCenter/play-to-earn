@@ -4,6 +4,7 @@ import { Container, Nav, NavItem, Table } from "reactstrap";
 import EditProfile from "../myModal/EditProfile";
 import pfpImg from "../../../assets/images/img.jpg";
 import ReactLoaing from "react-loading";
+import Badge from "react-bootstrap/Badge";
 
 import axios from "axios";
 
@@ -227,11 +228,10 @@ const SideBar = () => {
             {/* Edit */}
           </button>
 
-          <div className="myBset__ranking" content="">
-            My Ranking
-            <div>
-              {(snakeT + 1 + (tetrisT + 1) + (puzzleT + 1) + (mineT + 1)) / 4}등
-            </div>
+          <div className="myBest__ranking" content="">
+            <Badge pill bg="light" text="dark" className="my__Badge">
+              <p>My Ranking</p>
+            </Badge>
           </div>
         </div>
         <div className="link__conatainer">

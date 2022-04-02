@@ -143,6 +143,7 @@ const NftDetails = (props) => {
                     src={calldata.image}
                     alt=""
                     className="single__nft-img"
+                    style={{ width: "570px", height: "650px" }}
                   />
                 </Col>
 
