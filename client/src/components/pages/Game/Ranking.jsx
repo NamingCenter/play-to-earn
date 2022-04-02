@@ -1,33 +1,19 @@
 import { useEffect, useState } from "react";
-import { Col, Container } from "reactstrap";
+import { Col, Container, Row } from "reactstrap";
 import CommonSection from "../../ui/templete/CommonSection";
 import "./ranking.css";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import Clock from "./Clock";
 
 const Ranking = () => {
   const [toggleState, setToggleState] = useState(1);
   const account = useSelector((state) => state.AppState.account);
 
-  // Claim부분
-  const [snakeAddress, setSnakeAddress] = useState([]);
-  const [puzzleAddress, setPuzzleAddress] = useState([]);
-  const [tetrisAddress, setTetrisAddress] = useState([]);
-  const [mineAddress, setMineAddress] = useState([]);
-
-  const sendReward = async () => {
-    await axios
-      .post(`http://localhost:5000/ranking`, {
-        tetrisAddress,
-        puzzleAddress,
-        snakeAddress,
-        mineAddress,
-      })
-      .then((res) => {
-        console.log(res.data);
-        alert("DB 전송 완료");
-      });
-  };
+  const [timerDays, setTimerDays] = useState();
+  const [timerHours, setTimerHours] = useState();
+  const [timerMinutes, setTimerMinutes] = useState();
+  const [timerSeconds, setTimerSeconds] = useState();
 
   const toggleTab = (index) => {
     setToggleState(index);
@@ -202,243 +188,252 @@ const Ranking = () => {
         <strong> loading... </strong>
       ) : (
         <div className="Ranking__container">
-          <div className="bloc-tabs">
-            <button
-              className={toggleState === 1 ? "tabs active-tabs" : "tabs"}
-              onClick={() => toggleTab(1)}
-            >
-              OVERALL RANKING
-            </button>
-            <button
-              className={toggleState === 2 ? "tabs active-tabs" : "tabs"}
-              onClick={() => toggleTab(2)}
-            >
-              WEEKLY RANKING
-            </button>
-            <button
-              className={toggleState === 3 ? "tabs active-tabs" : "tabs"}
-              onClick={() => toggleTab(3)}
-            >
-              MY RANKING
-            </button>
-          </div>
-
-          <div className="content-tabs">
-            <div
-              className={
-                toggleState === 1 ? "content  active-content" : "content"
-              }
-            >
-              <h2>OVERALL RANKING</h2>
-              <hr />
-              <Container>
-                <div className="ranking__box">
-                  <div>
-                    <b>SnakeGame</b>
-                    <br />
-                    {snake
-                      .filter((v, i) => {
-                        return i < 3;
-                      })
-                      .map((v, i) => {
-                        return (
-                          <p key={i}>
-                            {i + 1}등 :&nbsp;
-                            {v === undefined
-                              ? "None"
-                              : v.snakePoint === null
-                              ? "None"
-                              : v.nick}
-                            &nbsp;
-                            {v === undefined
-                              ? ""
-                              : v.snakePoint === null
-                              ? ""
-                              : v.snakePoint + "점"}
-                          </p>
-                        );
-                      })}
-
-                    <br />
-                    <b>TetrisGame</b>
-                    <br />
-                    {tetris
-                      .filter((v, i) => {
-                        return i < 3;
-                      })
-                      .map((v, i) => {
-                        return (
-                          <p key={i}>
-                            {i + 1}등 :&nbsp;
-                            {v === undefined
-                              ? "None"
-                              : v.tetrisPoint === null
-                              ? "None"
-                              : v.nick}
-                            &nbsp;
-                            {v === undefined
-                              ? ""
-                              : v.tetrisPoint === null
-                              ? ""
-                              : v.tetrisPoint + "점"}
-                          </p>
-                        );
-                      })}
-
-                    <br />
-                    <b>2048Game</b>
-                    <br />
-                    {puzzle
-                      .filter((v, i) => {
-                        return i < 3;
-                      })
-                      .map((v, i) => {
-                        return (
-                          <p key={i}>
-                            {i + 1}등 :&nbsp;
-                            {v === undefined
-                              ? "None"
-                              : v.puzzlePoint === null
-                              ? "None"
-                              : v.nick}
-                            &nbsp;
-                            {v === undefined
-                              ? ""
-                              : v.puzzlePoint === null
-                              ? ""
-                              : v.puzzlePoint + "점"}
-                          </p>
-                        );
-                      })}
-                    <br />
-                    <b>MineGame</b>
-                    <br />
-                    {mine
-                      .filter((v, i) => {
-                        return i < 3;
-                      })
-                      .map((v, i) => {
-                        return (
-                          <p key={i}>
-                            {i + 1}등 :&nbsp;
-                            {v === undefined
-                              ? "None"
-                              : v.minePoint === null
-                              ? "None"
-                              : v.nick}
-                            &nbsp;
-                            {v === undefined
-                              ? ""
-                              : v.minePoint === null
-                              ? ""
-                              : v.minePoint + "초"}
-                          </p>
-                        );
-                      })}
-                  </div>
-                </div>
-                {/* <input
-                  type="number"
-                  onChange={(e) => {
-                    plusCount(e.target.value);
-                    console.log("c", count);
-                  }}
-                ></input> */}
+          <Row>
+            <Col lg="8" md="6" sm="6">
+              <div className="bloc-tabs">
                 <button
-                  type="submit"
-                  onClick={() => {
-                    sendReward();
-                  }}
+                  className={toggleState === 1 ? "tabs active-tabs" : "tabs"}
+                  onClick={() => toggleTab(1)}
                 >
-                  SEND RANKING DB
+                  종합랭킹
                 </button>
-              </Container>
-            </div>
+                <button
+                  className={toggleState === 2 ? "tabs active-tabs" : "tabs"}
+                  onClick={() => toggleTab(2)}
+                >
+                  주간랭킹
+                </button>
+                <button
+                  className={toggleState === 3 ? "tabs active-tabs" : "tabs"}
+                  onClick={() => toggleTab(3)}
+                >
+                  MY랭킹
+                </button>
+              </div>
 
-            <div
-              className={
-                toggleState === 2 ? "content  active-content" : "content"
-              }
-            >
-              <h2>WEEKLY RANKING</h2>
-              <hr />
-              <Container>
-                <div className="ranking__box">여기에 주간랭킹 순위표만들기</div>
-              </Container>
-            </div>
+              <div className="content-tabs">
+                <div
+                  className={
+                    toggleState === 1 ? "content  active-content" : "content"
+                  }
+                >
+                  <h2>종합랭킹</h2>
+                  <hr />
+                  <Container>
+                    <div className="ranking__box">
+                      {/* {loading ? (
+                  <strong> loading... </strong>
+                ) : ( */}
+                      <div>
+                        <b>SnakeGame</b>
+                        <br />
+                        {snake
+                          .filter((v, i) => {
+                            return i < 5;
+                          })
+                          .map((v, i) => {
+                            return (
+                              <p key={i}>
+                                {i + 1}등 :&nbsp;
+                                {v === undefined
+                                  ? "없음"
+                                  : v.snakePoint === null
+                                  ? "없음"
+                                  : v.nick}
+                                &nbsp;
+                                {v === undefined
+                                  ? ""
+                                  : v.snakePoint === null
+                                  ? ""
+                                  : v.snakePoint + "점"}
+                              </p>
+                            );
+                          })}
 
-            <div
-              className={
-                toggleState === 3 ? "content  active-content" : "content"
-              }
-            >
-              <h2>MY RANKING</h2>
-              <hr />
-              <Container>
-                <div>
-                  <b>SnakeGame</b>
-                  <br />
-                  {snake
-                    .filter((v, i) => {
-                      return i < 1;
-                    })
-                    .map((v, i) => {
-                      return (
-                        <div key={i}>
-                          {snakeI === null ? "None" : snakeT + 1 + "등"}
-                        </div>
-                      );
-                    })}
-                  <br />
-                  <b>2048Game</b>
-                  <br />
-                  {puzzle
-                    .filter((v, i) => {
-                      return i < 1;
-                    })
-                    .map((v, i) => {
-                      return (
-                        <div key={i}>
-                          {puzzleI === null ? "None" : puzzleT + 1 + "등"}
-                        </div>
-                      );
-                    })}
-                  <br />
-                  <b>TetrisGame</b>
-                  <br />
-                  {tetris
-                    .filter((v, i) => {
-                      return i < 1;
-                    })
-                    .map((v, i) => {
-                      return (
-                        <div key={i}>
-                          {v.tetrisPoint === null
-                            ? "None"
-                            : tetrisI === null
-                            ? "None"
-                            : tetrisT + 1 + "등"}
-                        </div>
-                      );
-                    })}
-                  <br />
-                  <b>MineGame</b>
-                  <br />
-                  {mine
-                    .filter((v, i) => {
-                      return i < 1;
-                    })
-                    .map((v, i) => {
-                      return (
-                        <div key={i}>
-                          {mineI === null ? "None" : mineT + 1 + "등"}
-                        </div>
-                      );
-                    })}
+                        <br />
+                        <b>TetrisGame</b>
+                        <br />
+                        {tetris
+                          .filter((v, i) => {
+                            return i < 5;
+                          })
+                          .map((v, i) => {
+                            return (
+                              <p key={i}>
+                                {i + 1}등 :&nbsp;
+                                {v === undefined
+                                  ? "없음"
+                                  : v.tetrisPoint === null
+                                  ? "없음"
+                                  : v.nick}
+                                &nbsp;
+                                {v === undefined
+                                  ? ""
+                                  : v.tetrisPoint === null
+                                  ? ""
+                                  : v.tetrisPoint + "점"}
+                              </p>
+                            );
+                          })}
+
+                        <br />
+                        <b>2048Game</b>
+                        <br />
+                        {puzzle
+                          .filter((v, i) => {
+                            return i < 5;
+                          })
+                          .map((v, i) => {
+                            return (
+                              <p key={i}>
+                                {i + 1}등 :&nbsp;
+                                {v === undefined
+                                  ? "없음"
+                                  : v.puzzlePoint === null
+                                  ? "없음"
+                                  : v.nick}
+                                &nbsp;
+                                {v === undefined
+                                  ? ""
+                                  : v.puzzlePoint === null
+                                  ? ""
+                                  : v.puzzlePoint + "점"}
+                              </p>
+                            );
+                          })}
+                        <br />
+                        <b>MineGame</b>
+                        <br />
+                        {mine
+                          .filter((v, i) => {
+                            return i < 5;
+                          })
+                          .map((v, i) => {
+                            return (
+                              <p key={i}>
+                                {i + 1}등 :&nbsp;
+                                {v === undefined
+                                  ? "없음"
+                                  : v.minePoint === null
+                                  ? "없음"
+                                  : v.nick}
+                                &nbsp;
+                                {v === undefined
+                                  ? ""
+                                  : v.minePoint === null
+                                  ? ""
+                                  : v.minePoint + "초"}
+                              </p>
+                            );
+                          })}
+                      </div>
+                      {/* )} */}
+                    </div>
+                  </Container>
                 </div>
-              </Container>
-            </div>
-          </div>
+
+                <div
+                  className={
+                    toggleState === 2 ? "content  active-content" : "content"
+                  }
+                >
+                  <h2>주간랭킹</h2>
+                  <hr />
+                  <Container>
+                    <div className="ranking__box">
+                      여기에 주간랭킹 순위표만들기
+                    </div>
+                  </Container>
+                </div>
+
+                <div
+                  className={
+                    toggleState === 3 ? "content  active-content" : "content"
+                  }
+                >
+                  <h2>나의랭킹</h2>
+                  <hr />
+                  <Container>
+                    <div>
+                      <b>SnakeGame</b>
+                      <br />
+                      {snake
+                        .filter((v, i) => {
+                          return i < 1;
+                        })
+                        .map((v, i) => {
+                          return (
+                            <div key={i}>
+                              {v.snakePoint === null
+                                ? "없음"
+                                : snakeT + 1 + "등"}
+                            </div>
+                          );
+                        })}
+                      <br />
+                      <b>2048Game</b>
+                      <br />
+                      {puzzle
+                        .filter((v, i) => {
+                          return i < 1;
+                        })
+                        .map((v, i) => {
+                          return (
+                            <div key={i}>
+                              {v.puzzlePoint === null
+                                ? "없음"
+                                : puzzleT + 1 + "등"}
+                            </div>
+                          );
+                        })}
+                      <br />
+                      <b>TetrisGame</b>
+                      <br />
+                      {tetris
+                        .filter((v, i) => {
+                          return i < 1;
+                        })
+                        .map((v, i) => {
+                          return (
+                            <div key={i}>
+                              {v.tetrisPoint === null
+                                ? "없음"
+                                : tetrisT + 1 + "등"}
+                            </div>
+                          );
+                        })}
+                      <br />
+                      <b>MineGame</b>
+                      <br />
+                      {mine
+                        .filter((v, i) => {
+                          return i < 1;
+                        })
+                        .map((v, i) => {
+                          return (
+                            <div key={i}>
+                              {v.minePoint === null ? "없음" : mineT + 1 + "등"}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </Container>
+                </div>
+              </div>
+            </Col>
+            <Col className="time__limit" lg="4" md="3" sm="3">
+              <h4>Time Limit</h4>
+              <p>You've reached your limit</p>
+              <Clock
+                className="clock__box"
+                timerDays={timerDays}
+                timerHours={timerHours}
+                timerMinutes={timerMinutes}
+                timerSeconds={timerSeconds}
+              />
+              <h3>Claim All Reward!!</h3>
+            </Col>
+          </Row>
         </div>
       )}
     </>
