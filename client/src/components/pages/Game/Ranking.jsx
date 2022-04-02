@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Col, Container } from "reactstrap";
-import CommonSection from "../ui/CommonSection";
+import CommonSection from "../../ui/templete/CommonSection";
 import "./ranking.css";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -379,7 +379,7 @@ const Ranking = () => {
                     .map((v, i) => {
                       return (
                         <div key={i}>
-                          {v.snakePoint === null ? "None" : snakeT + 1 + "등"}
+                          {v.snakePoint === null ? "없음" : snakeT + 1 + "등"}
                         </div>
                       );
                     })}
@@ -393,7 +393,7 @@ const Ranking = () => {
                     .map((v, i) => {
                       return (
                         <div key={i}>
-                          {v.puzzlePoint === null ? "None" : puzzleT + 1 + "등"}
+                          {v.puzzlePoint === null ? "없음" : puzzleT + 1 + "등"}
                         </div>
                       );
                     })}
@@ -407,7 +407,7 @@ const Ranking = () => {
                     .map((v, i) => {
                       return (
                         <div key={i}>
-                          {v.tetrisPoint === null ? "None" : tetrisT + 1 + "등"}
+                          {v.tetrisPoint === null ? "없음" : tetrisT + 1 + "등"}
                         </div>
                       );
                     })}
@@ -421,7 +421,7 @@ const Ranking = () => {
                     .map((v, i) => {
                       return (
                         <div key={i}>
-                          {v.minePoint === null ? "None" : mineT + 1 + "등"}
+                          {v.minePoint === null ? "없음" : mineT + 1 + "등"}
                         </div>
                       );
                     })}
