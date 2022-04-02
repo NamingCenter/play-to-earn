@@ -66,6 +66,7 @@ const Ranking = () => {
         return form;
       });
       setCount(weekArray);
+      setLoading(false);
       console.log(weekArray);
     });
 
@@ -343,7 +344,12 @@ const Ranking = () => {
                     console.log("c", count);
                   }}
                 ></input> */}
-                <button type="submit" onClick={sendReward()}>
+                <button
+                  type="submit"
+                  onClick={() => {
+                    sendReward();
+                  }}
+                >
                   SEND RANKING DB
                 </button>
               </Container>
