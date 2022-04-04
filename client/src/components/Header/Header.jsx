@@ -1,5 +1,8 @@
 import React, { useRef, useEffect, useState } from "react";
 import "./header.css";
+
+import logoPng from "../../assets/images/logoPng.png";
+
 // 로고 만들어서 아래 넣을예정
 //import logo from "../../assets/images/loader.gif";
 import { Container } from "reactstrap";
@@ -162,17 +165,33 @@ const Header = () => {
         );
     };
     return (
-        <header className="header" ref={headerRef}>
-            <Container>
-                <div className="navigation">
-                    <div className="logo">
-                        <h2>
-                            <span>
-                                <i className="ri-bear-smile-line">{/* <img src={logo} alt="loading..." /> */}</i>
-                            </span>
-                            NFTs
-                        </h2>
-                    </div>
+      <button className="connect_btn" onClick={() => checkWallet()}>
+        <span>
+          <i className="ri-wallet-line"></i>
+        </span>
+        Connect Wallet
+      </button>
+    );
+  };
+  return (
+    <header className="header" ref={headerRef}>
+      <Container>
+        <div className="navigation">
+          <div className="logo">
+            {/* <h2>
+              <span>
+                <i className="ri-bear-smile-line"> */}
+            {/* <img src={logo} alt="loading..." /> */}
+            {/*  </i>
+              </span>
+              NFTs
+            </h2> */}
+            <img
+              src={logoPng}
+              alt=""
+              style={{ width: "60px", height: "55px", marginLeft: "10%" }}
+            />
+          </div>
 
                     <div className="nav__menu" ref={menuRef} onClick={toggleMenu}>
                         <ul className="nav__list">
