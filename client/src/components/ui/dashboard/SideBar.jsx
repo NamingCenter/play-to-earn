@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 
 const SideBar = () => {
   const [nickname, setNicName] = useState([]);
+  const [imageURL, setImageURL] = useState(pfpImg);
   const [email, setEmail] = useState([]);
   // const [address, setAddress] = useState("address");
   const [Loading, setLoading] = useState(true);
@@ -227,7 +228,7 @@ const SideBar = () => {
           <div className="profile__pic">
             <img
               className="pfp__iamge"
-              src={pfpImg}
+              src={imageURL}
               id="upload__pfp"
               // onChange="loadFile(event)"
               alt="edit"
@@ -239,7 +240,10 @@ const SideBar = () => {
               </label>
             </button>
             {EditProfileModal && (
-              <EditProfile setShowModal={setEditProfileModal} />
+              <EditProfile
+                setShowModal={setEditProfileModal}
+                setImageURL={setImageURL}
+              />
             )}
           </div>
 
