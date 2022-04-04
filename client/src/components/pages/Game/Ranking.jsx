@@ -7,51 +7,72 @@ import { useSelector } from "react-redux";
 import Clock from "./Clock";
 
 const Ranking = () => {
+  const [loading, setLoading] = useState(true);
   const [toggleState, setToggleState] = useState(1);
   const account = useSelector((state) => state.AppState.account);
 
-  const [timerDays, setTimerDays] = useState();
-  const [timerHours, setTimerHours] = useState();
-  const [timerMinutes, setTimerMinutes] = useState();
-  const [timerSeconds, setTimerSeconds] = useState();
+  // Claim부분
+  const [snakeAddress, setSnakeAddress] = useState([]);
+  const [puzzleAddress, setPuzzleAddress] = useState([]);
+  const [tetrisAddress, setTetrisAddress] = useState([]);
+  const [mineAddress, setMineAddress] = useState([]);
 
-  let interval;
-
-  const startTimer = () => {
-    const countDownDate = new Date("May 01, 2022").getTime();
-
-    interval = setInterval(() => {
-      const now = new Date().getTime();
-
-      const distance = countDownDate - now;
-
-      const days = Math.floor(distance / (24 * 60 * 60 * 1000));
-
-      const hours = Math.floor(
-        (distance % (24 * 60 * 60 * 1000)) / (1000 * 60 * 60)
-      );
-
-      const minutes = Math.floor((distance % (60 * 60 * 1000)) / (1000 * 60));
-
-      const seconds = Math.floor((distance % (60 * 1000)) / 1000);
-
-      if (distance < 0) {
-        //Stop Timer
-
-        clearInterval(interval.current);
-      } else {
-        // Update Timer
-        setTimerDays(days);
-        setTimerHours(hours);
-        setTimerMinutes(minutes);
-        setTimerSeconds(seconds);
-      }
-    });
+  const sendReward = async () => {
+    await axios
+      .post(`http://localhost:5000/ranking`, {
+        tetrisAddress,
+        puzzleAddress,
+        snakeAddress,
+        mineAddress,
+      })
+      .then((res) => {
+        console.log(res.data);
+        alert("DB 전송 완료");
+      });
   };
 
-  useEffect(() => {
-    startTimer();
-  });
+  // const [timerDays, setTimerDays] = useState();
+  // const [timerHours, setTimerHours] = useState();
+  // const [timerMinutes, setTimerMinutes] = useState();
+  // const [timerSeconds, setTimerSeconds] = useState();
+
+  // let interval;
+
+  // const startTimer = () => {
+  //   const countDownDate = new Date("May 01, 2022").getTime();
+
+  //   interval = setInterval(() => {
+  //     const now = new Date().getTime();
+
+  //     const distance = countDownDate - now;
+
+  //     const days = Math.floor(distance / (24 * 60 * 60 * 1000));
+
+  //     const hours = Math.floor(
+  //       (distance % (24 * 60 * 60 * 1000)) / (1000 * 60 * 60)
+  //     );
+
+  //     const minutes = Math.floor((distance % (60 * 60 * 1000)) / (1000 * 60));
+
+  //     const seconds = Math.floor((distance % (60 * 1000)) / 1000);
+
+  //     if (distance < 0) {
+  //       //Stop Timer
+
+  //       clearInterval(interval.current);
+  //     } else {
+  //       // Update Timer
+  //       setTimerDays(days);
+  //       setTimerHours(hours);
+  //       setTimerMinutes(minutes);
+  //       setTimerSeconds(seconds);
+  //     }
+  //   });
+  // };
+
+  // useEffect(() => {
+  //   startTimer();
+  // }, []);
 
   const toggleTab = (index) => {
     setToggleState(index);
@@ -76,21 +97,27 @@ const Ranking = () => {
   const [tetrisI, setTetrisI] = useState(null);
 
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const [count, setCount] = useState([]);
+  console.log(count);
 
   const [count, setCount] = useState([]);
 
   useEffect(() => {
     axios.get(`http://localhost:5000/ranking`).then((response) => {
       const data = response.data;
-      const weekArray = data.map((data, index) => {
-        const form = {
-          count: data.weeks,
-        };
-        return form;
-      });
+      const weekArray = data
+        .filter((v, i) => {
+          return i < 1;
+        })
+        .map((data, index) => {
+          const form = {
+            count: data.weeks,
+          };
+          return form;
+        });
       setCount(weekArray);
-      setLoading(false);
+      console.log(weekArray);
     });
 
     axios
@@ -98,7 +125,6 @@ const Ranking = () => {
       .then((response) => {
         const data = response.data;
         setSnake(data);
-        setLoading(false);
 
         const snakeArray = data.map((data, index) => {
           const form = {
@@ -129,7 +155,6 @@ const Ranking = () => {
       .then((response) => {
         const data = response.data;
         setPuzzle(data);
-        setLoading(false);
 
         const puzzleArray = data.map((data, index) => {
           const form = {
@@ -160,7 +185,6 @@ const Ranking = () => {
       .then((response) => {
         const data = response.data;
         setMine(data);
-        setLoading(false);
 
         const mineArray = data.map((data, index) => {
           const form = {
@@ -191,7 +215,6 @@ const Ranking = () => {
       .then((response) => {
         const data = response.data;
         setTetris(data);
-        setLoading(false);
 
         const tetrisArray = data.map((data, index) => {
           const form = {
@@ -212,11 +235,11 @@ const Ranking = () => {
           }
         });
         setTetrisT(tetrisIndex);
-        setLoading(false);
       })
       .catch((error) => {
         setError(error);
       });
+    setLoading(false);
   }, []);
 
   return (
@@ -259,9 +282,6 @@ const Ranking = () => {
                   <hr />
                   <Container className="my__rank">
                     <div className="ranking__box">
-                      {/* {loading ? (
-                  <strong> loading... </strong>
-                ) : ( */}
                       <ul>
                         <li>SnakeGame</li>
                         <br />
@@ -365,7 +385,6 @@ const Ranking = () => {
                             );
                           })}
                       </ul>
-                      {/* )} */}
                     </div>
                   </Container>
                 </div>
@@ -416,6 +435,7 @@ const Ranking = () => {
                           return i < 1;
                         })
                         .map((v, i) => {
+                          console.log("v", v.puzzlePoint);
                           return (
                             <div key={i}>
                               {v.puzzlePoint === null
@@ -461,14 +481,16 @@ const Ranking = () => {
             </Col>
             <Col className="time__limit" lg="4" md="3" sm="3">
               <h4>Time Limit</h4>
-              <Clock
+              {/* <Clock
                 className="clock__box"
                 timerDays={timerDays}
                 timerHours={timerHours}
                 timerMinutes={timerMinutes}
                 timerSeconds={timerSeconds}
-              />
-              <h3>Claim All Reward!!</h3>
+              /> */}
+              <div type="button" onClick={sendReward}>
+                Claim All Reward!!
+              </div>
             </Col>
           </Row>
         </div>
