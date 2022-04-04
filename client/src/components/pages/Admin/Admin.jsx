@@ -162,7 +162,10 @@ const Admin = () => {
               </div>
               <Row>
                 <div className="section2__two">
-                  <Col>{/* <OwnerSellList /> */}</Col>
+                  <Col>
+                    <h5>작명소's All Nfts</h5>
+                    <OwnerSellList />
+                  </Col>
                 </div>
               </Row>
             </div>

@@ -116,7 +116,11 @@ const EditProfile = (props) => {
                   {/* */}
                   {/* <NftCard item={item} /> */}
 
-                  <img src={seletedImg} alt="Selected" className="selected" />
+                  <img
+                    // src={nftArray[0].fileUrl}
+                    alt="Selected"
+                    className="selected"
+                  />
 
                   <div className="img__Container">
                     {nftArray.map((img, index) => (
