@@ -53,12 +53,22 @@ const Ranking = () => {
   const [tetrisI, setTetrisI] = useState([]);
 
   const [error, setError] = useState(null);
-  const [count, setCount] = useState(0);
-  console.log("s", mine);
+  const [weeks, setWeeks] = useState([]);
+  console.log("v", weeks);
 
   const [count, setCount] = useState([]);
 
   useEffect(() => {
+    axios
+      .post(`http://localhost:5000/ranking/weeks`)
+      .then((response) => {
+        const data = response.data;
+        setWeeks(data);
+      })
+      .catch((error) => {
+        setError(error);
+      });
+
     axios
       .get(`http://localhost:5000/game/snake`)
       .then((response) => {
@@ -75,7 +85,7 @@ const Ranking = () => {
 
         const snakeArray = data.map((data, index) => {
           const form = {
-            weeks: count + 1,
+            weeks: weeks + 1,
             games: "snakeGame",
             rank: index + 1,
             address: data.address,
@@ -84,10 +94,6 @@ const Ranking = () => {
           return form;
         });
         setSnakeAddress(snakeArray);
-        const round = snakeArray.map((v, i) => {
-          setCount(v.weeks + 1);
-          return;
-        });
       })
       .catch((error) => {
         setError(error);
@@ -109,7 +115,7 @@ const Ranking = () => {
 
         const puzzleArray = data.map((data, index) => {
           const form = {
-            weeks: count + 1,
+            weeks: weeks + 1,
             games: "puzzleGame",
             rank: index + 1,
             address: data.address,
@@ -139,7 +145,7 @@ const Ranking = () => {
 
         const mineArray = data.map((data, index) => {
           const form = {
-            weeks: count + 1,
+            weeks: weeks + 1,
             games: "mineGame",
             rank: index + 1,
             address: data.address,
@@ -161,7 +167,7 @@ const Ranking = () => {
 
         const tetrisArray = data.map((data, index) => {
           const form = {
-            weeks: count + 1,
+            weeks: weeks + 1,
             games: "tetrisGame",
             rank: index + 1,
             address: data.address,
