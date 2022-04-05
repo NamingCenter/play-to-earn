@@ -14,7 +14,7 @@ import sum from "lodash/sum";
 
 const SideBar = () => {
   const [nickname, setNicName] = useState([]);
-  const [imageURL, setImageURL] = useState(pfpImg);
+  const [imageURL, setImageURL] = useState([]);
   const [email, setEmail] = useState([]);
   // const [address, setAddress] = useState("address");
   const [Loading, setLoading] = useState(true);
@@ -44,10 +44,24 @@ const SideBar = () => {
   const [tetrisT, setTetrisT] = useState(null);
   const [tetrisI, setTetrisI] = useState(null);
 
-  const [error, setError] = useState(null);
+  const [claim, setClaim] = useState(1);
+
+  const account = useSelector((state) => state.AppState.account);
+  const CreateNFTContract = useSelector(
+    (state) => state.AppState.CreateNFTContract
+  );
 
   const [EditProfileModal, setEditProfileModal] = useState(false);
   console.log("Balance", balance);
+
+  const claimToken = async () => {
+    await axios
+      .post(`http://localhost:5000/ranking`, { claim, account })
+      .then((res) => {
+        console.log(res.data);
+        alert("토큰 클레임 완료");
+      });
+  };
 
   useEffect(() => {
     if (account !== null) {
@@ -61,6 +75,7 @@ const SideBar = () => {
           console.log(res.data.nick);
           setNicName(res.data.nick);
           setEmail(res.data.email);
+          setImageURL(res.data.image);
         })
         .catch((err) => {
           console.log(err);
@@ -167,11 +182,23 @@ const SideBar = () => {
   const onSubmit = async () => {
     const nick = document.getElementById("nick__pfp").innerText;
     const email = document.getElementById("email__pfp").innerText;
-    await axios.post("http://localhost:5000/user/edit", {
-      nick: nick,
-      email: email,
-      address: account,
-    });
+    await axios
+      .post("http://localhost:5000/user/edit", {
+        nick: nick,
+        email: email,
+        address: account,
+      })
+      .then((res) => {
+        if (res.data.message === "ok") {
+          console.log(res.data.message);
+        } else {
+          console.log(res.data.message);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        // window.location("/error");
+      });
   };
 
   const updatedProfile = { nickname, email };
@@ -188,12 +215,17 @@ const SideBar = () => {
       <div className="slide__container">
         <div className="pfpside__box">
           {/* 여기부터 프로필 이미지 수정 */}
-          <div className="profile__pic">
+          <div
+            className="profile__pic"
+            onClick={() => setEditProfileModal(true)}
+          >
             <img
               className="pfp__iamge"
               src={imageURL}
               id="upload__pfp"
-              // onChange="loadFile(event)"
+              onChange={(e) => {
+                setImageURL(e.target.value);
+              }}
               alt="edit"
             />
             <button id="select__pfp" onClick={() => setEditProfileModal(true)}>
@@ -202,14 +234,13 @@ const SideBar = () => {
                 <span>Change Profile</span>
               </label>
             </button>
-            {EditProfileModal && (
-              <EditProfile
-                setShowModal={setEditProfileModal}
-                setImageURL={setImageURL}
-              />
-            )}
           </div>
-
+          {EditProfileModal && (
+            <EditProfile
+              setShowModal={setEditProfileModal}
+              setImageURL={setImageURL}
+            />
+          )}
           {/* 여기서부터 닉넴 이메일 수정 */}
           <div className="mypfp__Container">
             <div className="nick__pfp" id="nick__pfp">
@@ -257,22 +288,25 @@ const SideBar = () => {
           </button>
 
           <div className="myBest__ranking" content="">
-            <Badge pill bg="light" text="dark" className="my__Badge">
-              <p>My Ranking</p>
-              <p className="my_balance">
-                {balance
-                  .filter((v, i) => {
-                    return i < 1;
-                  })
-                  .map((v, i) => {
-                    let sum = 0;
-                    for (let i = 0; i < balance.length; i++) {
-                      sum += balance[i];
-                    }
-                    return <div key={i}>{sum}</div>;
-                  })}
-              </p>
+            <Badge pill bg="dark" text="dark" className="my__Badge">
+              <p>Total balance</p>
             </Badge>
+            {/* <p>{(snakeT + 1 + mineT + 1 + puzzleT + 1 + tetrisT + 1) / 4}등</p> */}
+            <p className="my_small_ranking">
+              Snake : {snakeI === null ? "None" : snakeT + 1 + "등"}
+            </p>
+            <p className="my_small_ranking">
+              Mine : {mineI === null ? "None" : mineT + 1 + "등"}
+            </p>
+            <p className="my_small_ranking">
+              2048 : {puzzleI === null ? "None" : puzzleT + 1 + "등"}
+            </p>
+            <p className="my_small_ranking">
+              Tetris : {tetrisI === null ? "None" : tetrisT + 1 + "등"}
+            </p>
+            <button className="get__token" onClick={claimToken}>
+              Claim Token
+            </button>
           </div>
         </div>
         <div className="link__conatainer">
