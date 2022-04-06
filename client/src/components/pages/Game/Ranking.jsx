@@ -4,6 +4,7 @@ import CommonSection from "../../ui/templete/CommonSection";
 import "./ranking.css";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import Clock from "./Clock";
 
 const Ranking = () => {
   const [loading, setLoading] = useState(true);
@@ -39,7 +40,7 @@ const Ranking = () => {
 
   const startTimer = () => {
     const countDownDate = new Date("May 01, 2022").getTime();
-
+    console.log(countDownDate);
     interval = setInterval(() => {
       const now = new Date().getTime();
 
@@ -96,8 +97,6 @@ const Ranking = () => {
   const [tetrisI, setTetrisI] = useState([]);
 
   const [error, setError] = useState(null);
-
-  const [count, setCount] = useState([]);
 
   useEffect(() => {
     axios
