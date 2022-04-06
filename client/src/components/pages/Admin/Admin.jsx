@@ -21,18 +21,6 @@ const Admin = () => {
   const [puzzleRank, setPuzzleRank] = useState([]);
   const [tetrisRank, setTetrisRank] = useState([]);
   const [mineRank, setMineRank] = useState([]);
-  const [timerSigned, setTimerSigned] = useState([]);
-
-  const sendTimer = async () => {
-    await axios
-      .post(`http://localhost:5000/user/owner`, {
-        count: timerSigned,
-      })
-      .then((res) => {
-        console.log(res.data);
-        alert("DB 전송 완료");
-      });
-  };
 
   const sendReward = async () => {
     await axios
@@ -44,7 +32,6 @@ const Admin = () => {
         address: account,
       })
       .then((res) => {
-        console.log(res.data);
         alert("DB 전송 완료");
       });
   };
@@ -54,7 +41,6 @@ const Admin = () => {
       .get(`http://localhost:5000/game/snake`)
       .then((response) => {
         const data = response.data;
-        console.log(data);
 
         const snakeInfo = data.map((data, index) => {
           const form = {
@@ -75,7 +61,6 @@ const Admin = () => {
       .get(`http://localhost:5000/game/tetris`)
       .then((response) => {
         const data = response.data;
-        console.log(data);
 
         const tetrisInfo = data.map((data, index) => {
           const form = {
@@ -96,7 +81,6 @@ const Admin = () => {
       .get(`http://localhost:5000/game/2048`)
       .then((response) => {
         const data = response.data;
-        console.log(data);
 
         const puzzleInfo = data.map((data, index) => {
           const form = {
@@ -117,7 +101,6 @@ const Admin = () => {
       .get(`http://localhost:5000/game/mine`)
       .then((response) => {
         const data = response.data;
-        console.log(data);
 
         const mineInfo = data.map((data, index) => {
           const form = {
