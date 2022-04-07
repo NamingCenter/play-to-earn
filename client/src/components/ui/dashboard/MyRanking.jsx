@@ -1,159 +1,92 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 import "./my-ranking.css";
 import Carousel from "react-elastic-carousel";
-import { Card } from "reactstrap";
 
 const MyRanking = () => {
-  const [snake, setSnake] = useState([]);
-  const [snakeT, setSnakeT] = useState(null);
-  const [snakeI, setSnakeI] = useState(null);
+    const [rankingDB, setRankingDB] = useState(null);
 
-  const [puzzle, setPuzzle] = useState([]);
-  const [puzzleT, setPuzzleT] = useState(null);
-  const [puzzleI, setPuzzleI] = useState(null);
+    const account = useSelector((state) => state.AppState.account);
 
-  const [mine, setMine] = useState([]);
-  const [mineT, setMineT] = useState(null);
-  const [mineI, setMineI] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  const [tetris, setTetris] = useState([]);
-  const [tetrisT, setTetrisT] = useState(null);
-  const [tetrisI, setTetrisI] = useState(null);
+    useEffect(() => {
+        if (account !== null) {
+            axios.post(`http://localhost:5000/game/ranking`, { address: account }).then((response) => {
+                const data = response.data;
+                console.log(data);
+                setRankingDB(data);
+            });
 
-  const account = useSelector((state) => state.AppState.account);
-
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    axios.get(`http://localhost:5000/game/snake`).then((response) => {
-      const data = response.data;
-      setSnake(data);
-      const snakeIndex = data.findIndex((element) => {
-        if (element.address === account) {
-          setSnakeI(element);
-          return true;
+            setLoading(false);
         }
-      });
-      setSnakeT(snakeIndex);
-    });
-
-    axios.get(`http://localhost:5000/game/tetris`).then((response) => {
-      const data = response.data;
-      setTetris(data);
-      const tetrisIndex = data.findIndex((element) => {
-        if (element.address === account) {
-          setTetrisI(element);
-          return true;
-        }
-      });
-      setTetrisT(tetrisIndex);
-    });
-
-    axios.get(`http://localhost:5000/game/mine`).then((response) => {
-      const data = response.data;
-      setMine(data);
-      const mineIndex = data.findIndex((element) => {
-        if (element.address === account) {
-          setMineI(element);
-          return true;
-        }
-      });
-      setMineT(mineIndex);
-    });
-
-    axios.get(`http://localhost:5000/game/2048`).then((response) => {
-      const data = response.data;
-      setPuzzle(data);
-      const puzzleIndex = data.findIndex((element) => {
-        if (element.address === account) {
-          setPuzzleI(element);
-          return true;
-        }
-      });
-      setPuzzleT(puzzleIndex);
-    });
-    setLoading(false);
-  }, []);
-
-  return (
-    <div className="myrank__card">
-      {loading ? (
-        <strong> loading... </strong>
-      ) : (
-        <div className="carousel__box">
-          <Carousel itemsToShow={1}>
-            <div className="carousel__card" numbers="1">
-              <div className="myrank__content">
-                <div className="myrank__chart">
-                  <i className="ri-hand-coin-line"></i>
+    }, [account]);
+    return (
+        <div className="myrank__card">
+            {loading ? (
+                <strong> loading... </strong>
+            ) : (
+                <div className="carousel__box">
+                    <Carousel itemsToShow={1}>
+                        <div className="carousel__card" numbers="1">
+                            <div className="myrank__content">
+                                <div className="myrank__chart">
+                                    <i className="ri-hand-coin-line"></i>
+                                </div>
+                                <div className="myrank__text">
+                                    <div className="rank__mybox">
+                                        SnakeGame <br />
+                                        {rankingDB !== null ? (rankingDB.snakeMyRanking === 0 ? "순위없음" : rankingDB.snakeMyRanking + " 등") : false}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="carousel__card" numbers="2">
+                            <div className="myrank__content">
+                                <div className="myrank__chart">
+                                    <i className="ri-hand-coin-line"></i>
+                                </div>
+                                <div className="myrank__text">
+                                    <div className="rank__mybox">
+                                        TetrisGame <br />
+                                        {rankingDB !== null ? (rankingDB.tetrisMyRanking === 0 ? "순위없음" : rankingDB.tetrisMyRanking + " 등") : false}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="carousel__card" numbers="3">
+                            <div className="myrank__content">
+                                <div className="myrank__chart">
+                                    <i className="ri-hand-coin-line"></i>
+                                </div>
+                                <div className="myrank__text">
+                                    <div className="rank__mybox">
+                                        2048Game <br />
+                                        {rankingDB !== null ? (rankingDB.puzzleMyRanking === 0 ? "순위없음" : rankingDB.puzzleMyRanking + " 등") : false}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="carousel__card" numbers="4">
+                            <div className="myrank__content">
+                                <div className="myrank__chart">
+                                    <i className="ri-hand-coin-line"></i>
+                                </div>
+                                <div className="myrank__text">
+                                    <div className="rank__mybox">
+                                        MineGame <br />
+                                        {rankingDB !== null ? (rankingDB.mineMyRanking === 0 ? "순위없음" : rankingDB.mineMyRanking + " 등") : false}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Carousel>
                 </div>
-                <div className="myrank__text">
-                  <div className="rank__mybox">
-                    SnakeGame <br />
-                    {snakeI === null ? "None" : snakeT + 1 + "위"}
-                  </div>
-                  {/* <button className="get__token" onClick={claimToken}>
-                    Claim Token
-                  </button> */}
-                </div>
-              </div>
-            </div>
-            <div className="carousel__card" numbers="2">
-              <div className="myrank__content">
-                <div className="myrank__chart">
-                  <i className="ri-hand-coin-line"></i>
-                </div>
-                <div className="myrank__text">
-                  <div className="rank__mybox">
-                    TetrisGame <br />
-                    {tetrisI === null ? "None" : tetrisT + 1 + "위"}
-                  </div>
-                  {/* <button className="get__token" onClick={claimToken}>
-                    Claim Token
-                  </button> */}
-                </div>
-              </div>
-            </div>
-            <div className="carousel__card" numbers="3">
-              <div className="myrank__content">
-                <div className="myrank__chart">
-                  <i className="ri-hand-coin-line"></i>
-                </div>
-                <div className="myrank__text">
-                  <div className="rank__mybox">
-                    2048Game <br />
-                    {puzzleI === null ? "None" : puzzleT + 1 + "위"}
-                  </div>
-                  {/* <button className="get__token" onClick={claimToken}>
-                    Claim Token
-                  </button> */}
-                </div>
-              </div>
-            </div>
-            <div className="carousel__card" numbers="4">
-              <div className="myrank__content">
-                <div className="myrank__chart">
-                  <i className="ri-hand-coin-line"></i>
-                </div>
-                <div className="myrank__text">
-                  <div className="rank__mybox">
-                    MineGame <br />
-                    {mineI === null ? "None" : mineT + 1 + "위"}
-                  </div>
-                  {/* <button className="get__token" onClick={claimToken}>
-                    Claim Token
-                  </button> */}
-                </div>
-              </div>
-            </div>
-          </Carousel>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default MyRanking;
