@@ -16,7 +16,7 @@ const Ranking = () => {
   const [timerMinutes, setTimerMinutes] = useState();
   const [timerSeconds, setTimerSeconds] = useState();
 
-  // const [isStop, setIsStop] = useState(false);
+  const [isStop, setIsStop] = useState(false);
 
   //   useEffect(() => {
   //     let interval = setInterval(() => {
@@ -53,8 +53,8 @@ const Ranking = () => {
 
   const [rankingDB, setRankingDB] = useState(null);
   const [weekly, setWeekly] = useState(null);
-  console.log("w", weekly);
   const [error, setError] = useState(null);
+  console.log(weekly);
 
   useEffect(() => {
     if (account !== null) {
@@ -81,7 +81,7 @@ const Ranking = () => {
       .catch((error) => {
         setError(error);
       });
-  }, []);
+  }, [account]);
 
   function RankingListForm(form) {
     const result = [];
@@ -99,6 +99,32 @@ const Ranking = () => {
           <Fragment key={i}>
             <p>
               {i + 1}등 : {form[i].nick}
+            </p>
+          </Fragment>
+        );
+      }
+    }
+    return result;
+  }
+
+  function weeklyRanking(form) {
+    const result = [];
+    for (let i = 0; i < weekly.length; i++) {
+      if (form[i] !== weekly.index) {
+        result.push(
+          <Fragment key={i}>
+            <p>
+              {i + 1}주차
+              <br />
+              {weekly[i].map((v, i) => {
+                return v.games;
+              })}
+              <br />
+              <br />
+              {weekly[i].map((v, i) => {
+                return v.nick;
+              })}
+              <br />
             </p>
           </Fragment>
         );
@@ -183,8 +209,9 @@ const Ranking = () => {
                 >
                   <h2>Weekly Ranking</h2>
                   <hr />
-                  <Container>
+                  <Container className="my__rank">
                     <div className="ranking__box">
+                      {weekly !== null ? weeklyRanking(weekly[0]) : false}
                     </div>
                   </Container>
                 </div>
