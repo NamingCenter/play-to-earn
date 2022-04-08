@@ -53,7 +53,7 @@ const MySellList = () => {
           let item = {
             fileUrl: await meta.image,
             formInput: {
-              price: await meta.price,
+              price: i.price,
               name: await meta.name,
               description: await meta.description,
             },
