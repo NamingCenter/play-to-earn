@@ -6,32 +6,18 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-import NftCard from "../templete/NftCard";
+import "./myslick.css";
 
 import axios from "axios";
 import { useSelector } from "react-redux";
+import MySellCard from "./MySellCard";
 
-const MySlick = () => {
+const MySlick = (props) => {
   const [nftArray, setnftArray] = useState([]);
   // const Selllists = useSelector((state) => state.AppState.Selllists);
   const [Loading, setLoading] = useState(true);
   const [fileUrl, setFileUrl] = useState("");
   const [test, setTest] = useState(false);
-  // const [NFTimage, setNFTimage] = useState("");
-  // const [NFTname, setNFTname] = useState("");
-  // const [NFTdesc, setNFTdesc] = useState("");
-
-  // const [form, setForm] = useState({
-  //   fileUrl: fileUrl,
-  //   formInput: {
-  //     id: "",
-  //     price: "",
-  //     name: "",
-  //     description: "",
-  //   },
-  // });
-
-  // console.log(nftArray);
 
   const Account = useSelector((state) => state.AppState.account);
   const CreateNFTContract = useSelector(
@@ -57,6 +43,7 @@ const MySlick = () => {
             console.log(error);
           }
         });
+      console.log(await lists);
 
       const result = await Promise.all(
         lists.map(async (i) => {
@@ -67,8 +54,10 @@ const MySlick = () => {
           let item = {
             fileUrl: await meta.image,
             formInput: {
-              price: await meta.price,
+              price: i.price,
               name: await meta.name,
+              rare: i.rare,
+              star: i.star,
               tokenId: i.tokenId,
               description: await meta.description,
             },
@@ -76,7 +65,7 @@ const MySlick = () => {
           return item;
         })
       );
-
+      console.log(result);
       setnftArray(result);
     }
   }
@@ -107,8 +96,9 @@ const MySlick = () => {
         <div className="slick-arrow">
           <Slider {...settings} style={{ width: 900 }}>
             {nftArray.map((items, index) => {
+              console.log(items);
               return (
-                <Fragment key={index}>
+                <Fragment>
                   {/* <input
                     type="checkbox"
                     hidden={test}
@@ -116,7 +106,7 @@ const MySlick = () => {
                   /> */}
                   {/* // <motion.div key={index} className="my-items"> */}
                   <Col key={index} className="my-items">
-                    <NftCard item={items}></NftCard>
+                    <MySellCard item={items} />
                   </Col>
                 </Fragment>
               );
