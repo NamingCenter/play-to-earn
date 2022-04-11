@@ -11,7 +11,7 @@ import { Container } from "reactstrap";
 import { Link, NavLink } from "react-router-dom";
 import { useDispatch, useSelector, useStore } from "react-redux";
 import MetaMaskOnboarding from "@metamask/onboarding";
-import { updateAccounts, getWeb3 } from "../../redux/actions/index";
+import { updateAccounts } from "../../redux/actions/index";
 import axios from "axios";
 import { utils } from "ethers";
 
@@ -35,6 +35,10 @@ const NAV__LINKS = [
   {
     display: "Contact",
     url: "/contact",
+  },
+  {
+    display: "Evolution",
+    url: "/upgrade",
   },
   {
     display: "TestField",
@@ -81,9 +85,9 @@ const Header = () => {
         headerRef.current.classList.remove("header__shrink");
       }
     });
-    return () => {
-      window.removeEventListener("scroll");
-    };
+    // return () => {
+    //     window.removeEventListener("scroll");
+    // };
   }, []);
 
   async function checkOwner(account) {
@@ -96,15 +100,7 @@ const Header = () => {
 
   async function MyList(account) {
     if (CreateNFTContract !== null) {
-      const MyNFTlists = await CreateNFTContract.methods
-        .MyNFTlists()
-        .call({ from: account }, (error) => {
-          if (!error) {
-            console.log("send ok");
-          } else {
-            console.log(error);
-          }
-        });
+      const MyNFTlists = await CreateNFTContract.methods.MyNFTlists().call();
 
       const listsForm = await Promise.all(
         MyNFTlists.map(async (i) => {
@@ -116,7 +112,9 @@ const Header = () => {
             fileUrl: await meta.image,
             formInput: {
               tokenid: i.tokenId,
-              price: await meta.price,
+              price: i.price,
+              rare: i.rare,
+              star: i.star,
               name: await meta.name,
               description: await meta.description,
             },
