@@ -6,14 +6,11 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-import MySellCard from "../../ui/dashboard/MySellCard";
-
-import "./owner-sellList.css";
+import NftCard from "../../ui/templete/NftCard";
 
 import axios from "axios";
 
 import { useSelector } from "react-redux";
-import { FaMeteor } from "react-icons/fa";
 
 const OwnerSellList = () => {
   const [nftArray, setnftArray] = useState([]);
@@ -58,7 +55,6 @@ const OwnerSellList = () => {
               description: await meta.description,
             },
           };
-          console.log(item);
           return item;
         })
       );
@@ -96,7 +92,7 @@ const OwnerSellList = () => {
               return (
                 // <motion.div key={index} className="my-items">
                 <Col key={index} className="my-items">
-                  <MySellCard item={items}></MySellCard>
+                  <NftCard item={items}></NftCard>
                 </Col>
               );
             })}
