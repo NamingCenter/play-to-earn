@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Col, Container, Row } from "reactstrap";
 import CommonSection from "../../ui/templete/CommonSection";
 import "./ranking.css";
@@ -6,7 +6,6 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import Clock from "./Clock";
 import Carousel from "react-elastic-carousel";
-import { Link } from "react-router-dom";
 
 const Ranking = () => {
   const [loading, setLoading] = useState(true);
@@ -18,6 +17,7 @@ const Ranking = () => {
   const [timerHours, setTimerHours] = useState();
   const [timerMinutes, setTimerMinutes] = useState();
   const [timerSeconds, setTimerSeconds] = useState();
+  const timerid = useRef(null);
 
   const [isStop, setIsStop] = useState(false);
 
@@ -29,34 +29,32 @@ const Ranking = () => {
     setLoading(false);
   }, []);
 
-  // useEffect(() => {
-  //   let interval = setInterval(async () => {
-  //     const countdownDate = new Date(defaultTime).getTime();
+  useEffect(() => {
+    timerid.current = setInterval(async () => {
+      const countdownDate = new Date(defaultTime).getTime();
 
-  //     const now = new Date().getTime();
-  //     const distance = countdownDate - now;
+      const now = new Date().getTime();
+      const distance = countdownDate - now;
 
-  //     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  //     const hours = Math.floor(
-  //       (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-  //     );
-  //     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  //     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-  //     if (!isStop) {
-  //       // update timer
-  //       setTimerDays(days);
-  //       setTimerHours(hours);
-  //       setTimerMinutes(minutes);
-  //       setTimerSeconds(seconds);
-  //     } else {
-  //       clearInterval(interval);
-  //     }
-  //   }, 1000);
-  //   return () => {
-  //     setIsStop(true);
-  //     setLoading(false);
-  //   };
-  // }, [defaultTime]);
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      if (!isStop) {
+        // update timer
+        setTimerDays(days);
+        setTimerHours(hours);
+        setTimerMinutes(minutes);
+        setTimerSeconds(seconds);
+      }
+    }, 1000);
+    return () => {
+      clearInterval(timerid.current);
+      setIsStop(true);
+    };
+  }, [defaultTime]);
 
   const toggleTab = (index) => {
     setToggleState(index);
@@ -120,7 +118,7 @@ const Ranking = () => {
     const temp = [];
     for (let i = 0; i < form.length; i++) {
       const result = [];
-      result.push(<p key={i + "-week"}>{i + 1}주차</p>);
+      result.push(<p key={i + "week"}>{i + 1}주차</p>);
       for (let k = 0; k < form[i].length; k++) {
         if (form[i][k] === undefined) {
           result.push(<p key={k}> 공석 </p>);
@@ -157,7 +155,7 @@ const Ranking = () => {
                   className={toggleState === 2 ? "tabs active-tabs" : "tabs"}
                   onClick={() => toggleTab(2)}
                 >
-                  Weekly Ranking
+                  form Ranking
                 </button>
                 <button
                   className={toggleState === 3 ? "tabs active-tabs" : "tabs"}
@@ -284,9 +282,6 @@ const Ranking = () => {
                 timerMinutes={timerMinutes}
                 timerSeconds={timerSeconds}
               />
-              <button className="aat__token" href="/mypage">
-                <Link to={`/mypage`}>Check your AAT Balance</Link>
-              </button>
             </Col>
           </Row>
         </div>
