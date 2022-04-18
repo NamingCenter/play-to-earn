@@ -18,24 +18,12 @@ const NftSellCard = (props) => {
   const dispatch = useDispatch();
 
   const stars = Array(5).fill(1);
-  const [currentValue, setCurrnetValue] = useState(props.item.formInput.star);
-  const [hoverValue, setHoverValue] = useState(undefined);
 
-  const handleClick = (value) => {
-    setCurrnetValue(value);
-  };
+  const [testdata, setTestdata] = useState(null);
 
-  const handleMouseOver = (value) => {
-    setHoverValue(value);
-  };
-
-  const handleMouseLeave = () => {
-    setHoverValue(undefined);
-  };
-
-  console.log(props.item.formInput.star);
-
-  useEffect(() => {}, [currentValue]);
+  useEffect(() => {
+    setTestdata(props.item);
+  }, [props]);
 
   return (
     <div>
@@ -120,7 +108,7 @@ const NftSellCard = (props) => {
             </button>
           </div>
           <span className="view__link">
-            <Link to={`/detailes/${props.item.formInput.tokenId}`}>
+            <Link to={`/detailes/${props.item.formInput.tokenid}`}>
               View More
             </Link>
           </span>
