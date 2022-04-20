@@ -2,21 +2,22 @@ import React, { useRef, useEffect, useState } from "react";
 import "./header.css";
 import { useCookies } from "react-cookie";
 import logoPng from "../../assets/images/logoPng.png";
-import { ethers } from "ethers";
-import { Container } from "reactstrap";
+import { Button, Container } from "reactstrap";
 
 import { Link, NavLink } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, useStore } from "react-redux";
+import MetaMaskOnboarding from "@metamask/onboarding";
 import Web3Modal from "web3modal";
-import WalletConnectProvider from "@walletconnect/web3-provider";
+import Web3 from "web3";
+import { ethers } from "ethers";
+import { providers } from "ethers";
+import renderAccount from "./renderAccount";
+import providerOptions from "./providerOptions";
 
-import {
-  updateAccounts,
-  changeChainid,
-  getWeb3,
-} from "../../redux/actions/index";
+import { updateAccounts } from "../../redux/actions/index";
 import axios from "axios";
 import { utils } from "ethers";
+import WalletConnectProvider from "@walletconnect/web3-provider";
 
 const NAV__LINKS = [
   {
@@ -49,21 +50,6 @@ const NAV__LINKS = [
   },
 ];
 
-const providerOptions = {
-  walletconnect: {
-    package: WalletConnectProvider,
-    options: {
-      infuraId: "5bd970f2bf6047318bda7b13eb3c24ce",
-    },
-  },
-};
-
-const web3Modal = new Web3Modal({
-  network: "mainnet",
-  cacheProvider: true,
-  providerOptions: providerOptions,
-});
-
 const Header = () => {
   const dispatch = useDispatch();
   const headerRef = useRef(null);
@@ -74,221 +60,104 @@ const Header = () => {
   const Owner = useSelector((state) => state.AppState.Owner);
   const isUser = useSelector((state) => state.AppState.isUser);
   const [isDisabled, setDisabled] = useState(false);
+  const [accounts, setAccounts] = useState([]);
   const [isOwner, setIsOwner] = useState(false);
+  const onboarding = useRef();
+
+  const Account = useSelector((state) => state.AppState.account);
   const TokenClaimContract = useSelector(
     (state) => state.AppState.TokenClaimContract
   );
 
   const [cookies, setCookie, removeCookie] = useCookies(["rememberAddress"]);
 
+  const [connectedWallet, setConnectedWallet] = useState(false);
   // Web3modal instance
-  const [provider, setProvider] = useState();
-  const [library, setLibrary] = useState();
-  const [account, setAccount] = useState();
-  const [signature, setSignature] = useState("");
-  const [error, setError] = useState("");
-  const [chainId, setChainId] = useState();
-  const [network, setNetwork] = useState();
-  const [message, setMessage] = useState("");
-  const [signedMessage, setSignedMessage] = useState("");
-  const [verified, setVerified] = useState();
+  const web3ModalRef = useRef();
+
+  const getSignerOrProvider = async (needSigner = false) => {
+    const provider = await web3ModalRef.current.connect();
+    const web3Provider = new providers.Web3Provider(provider);
+    const { chainId } = await web3Provider.getNetwork();
+    console.log(chainId);
+    if (chainId !== 1337) {
+      alert("가나슈가아니에요");
+      throw new Error("Change network to Rinkeby");
+    }
+    if (needSigner) {
+      const signer = web3Provider.getSigner();
+      return signer;
+    }
+    return provider;
+  };
+  useEffect(() => {
+    const providerOptions = {
+      walletconnect: {
+        package: WalletConnectProvider,
+        options: {
+          // Mikko's test key - don't copy as your mileage may vary
+          infuraId: "8043bb2cf99347b1bfadfb233c5325c0",
+        },
+      },
+    };
+
+    web3ModalRef.current = new Web3Modal({
+      cacheProvider: false, // optional
+      providerOptions, // required
+    });
+  }, []);
 
   const connectWallet = async () => {
     try {
-      const provider = await web3Modal.connect();
-      dispatch(getWeb3(provider));
-      const accounts = provider["_state"].accounts;
-      const selectAccount = utils.getAddress(accounts[0]);
-      if (accounts) setAccount(selectAccount);
-      const network = parseInt(provider["chainId"]);
-      setProvider(provider);
-      setChainId(network);
-
-      await axios
-        .post("http://127.0.0.1:5000/user/login", {
-          address: selectAccount,
-          owner: Owner,
-        })
-        .then(async (res) => {
-          dispatch(
-            updateAccounts({
-              chainid: network.chainId,
-              wallet: true,
-              account: selectAccount,
-              isUser: res.data.nick === "noname" ? false : true,
-              MyNFTlists: await MyList(selectAccount),
-              Mybalance: await checkMyBalance(selectAccount),
-            })
-          );
-          await checkOwner(selectAccount);
-          setDisabled(true);
-        });
-    } catch (error) {
-      setError(error);
+      let provider = await Web3Modal.connect();
+    } catch (e) {
+      console.log("Could not get a wallet connection", e);
+      return;
     }
+
+    // // Subscribe to accounts change
+    // provider.on("accountsChanged", (accounts) => {
+    //   fetchAccountData();
+    // });
+
+    // // Subscribe to chainId change
+    // provider.on("chainChanged", (chainId) => {
+    //   fetchAccountData();
+    // });
+
+    // // Subscribe to networkId change
+    // provider.on("networkChanged", (networkId) => {
+    //   fetchAccountData();
+    // });
+
+    // await refreshAccountData();
+
+    // try {
+    //   await getSignerOrProvider();
+    //   setConnectedWallet(true);
+    // } catch (error) {
+    //   console.log("error", error);
+    // }
   };
 
-  // const switchNetwork = async () => {
-  //   try {
-  //     await library.provider.request({
-  //       method: "wallet_switchEthereumChain",
-  //       params: [{ chainId: toHex(network) }],
-  //     });
-  //   } catch (switchError) {
-  //     if (switchError.code === 4902) {
-  //       try {
-  //         await library.provider.request({
-  //           method: "wallet_addEthereumChain",
-  //           params: [networkParams[toHex(network)]],
-  //         });
-  //       } catch (error) {
-  //         setError(error);
-  //       }
-  //     }
-  //   }
-  // };
-
-  // const signMessage = async () => {
-  //   if (!library) return;
-  //   try {
-  //     const signature = await library.provider.request({
-  //       method: "personal_sign",
-  //       params: [message, account],
-  //     });
-  //     setSignedMessage(message);
-  //     setSignature(signature);
-  //   } catch (error) {
-  //     setError(error);
-  //   }
-  // };
-
-  // const verifyMessage = async () => {
-  //   if (!library) return;
-  //   try {
-  //     const verify = await library.provider.request({
-  //       method: "personal_ecRecover",
-  //       params: [signedMessage, signature],
-  //     });
-  //     setVerified(verify === account.toLowerCase());
-  //   } catch (error) {
-  //     setError(error);
-  //   }
-  // };
-
-  const refreshState = () => {
-    setAccount();
-    setChainId();
-    setNetwork("");
-    setMessage("");
-    setSignature("");
-    setDisabled(false);
-    setIsOwner(false);
-    setVerified(undefined);
-  };
-
-  const disconnect = async () => {
-    await web3Modal.clearCachedProvider();
-    console.log(await web3Modal.clearCachedProvider());
-    refreshState();
-    dispatch(
-      updateAccounts({
-        chainid: false,
-        wallet: false,
-        account: null,
-        isUser: false,
-        MyNFTlists: null,
-        Mybalance: 0,
-      })
-    );
-  };
+  // useEffect(async () => {
+  //   web3ModalRef.current = new Web3Modal({
+  //     network: "rinkeby",
+  //     theme: "dark",
+  //     providerOptions: {},
+  //   });
+  //   console.log("FdFSDf", web3ModalRef.current);
+  // }, []);
 
   useEffect(() => {
-    if (provider?.on) {
-      const handleAccountsChanged = async (accounts) => {
-        console.log("accountsChanged", accounts);
-        if (accounts.length !== 0) {
-          const getAddress = utils.getAddress(accounts[0]);
-          const checkUser = await axios
-            .post("http://127.0.0.1:5000/user/login", {
-              address: getAddress,
-              owner: Owner,
-            })
-            .then((res) => res.data.nick);
-          dispatch(
-            updateAccounts({
-              chainid: parseInt(provider.chainId),
-              wallet: true,
-              account: getAddress,
-              isUser: checkUser === "noname" ? false : true,
-              MyNFTlists: await MyList(getAddress),
-              Mybalance: await checkMyBalance(getAddress),
-            })
-          );
-          await checkOwner(getAddress);
-          setAccount(getAddress);
-          setDisabled(true);
-        } else {
-          disconnect();
-          dispatch(
-            updateAccounts({
-              chainid: false,
-              wallet: false,
-              account: null,
-              isUser: false,
-              MyNFTlists: null,
-              Mybalance: 0,
-            })
-          );
-        }
-      };
-
-      const handleChainChanged = (_hexChainId) => {
-        setChainId(parseInt(_hexChainId));
-        dispatch(
-          changeChainid({
-            chainid: parseInt(_hexChainId),
-          })
-        );
-      };
-
-      const handleDisconnect = () => {
-        console.log("disconnect", error);
-        disconnect();
-        dispatch(
-          updateAccounts({
-            chainid: false,
-            wallet: false,
-            account: null,
-            isUser: false,
-            MyNFTlists: null,
-            Mybalance: 0,
-          })
-        );
-      };
-
-      provider.on("accountsChanged", handleAccountsChanged);
-      provider.on("chainChanged", handleChainChanged);
-      provider.on("disconnect", handleDisconnect);
-
-      return () => {
-        if (provider.removeListener) {
-          provider.removeListener("accountsChanged", handleAccountsChanged);
-          provider.removeListener("chainChanged", handleChainChanged);
-          provider.removeListener("disconnect", handleDisconnect);
-        }
-      };
+    if (cookies.rememberAddress === undefined) {
+      if (Account !== null) {
+        setCookie("rememberAddress", Account, { maxAge: 30 });
+      }
+    } else {
+      removeCookie("rememberAddress");
     }
-  }, [provider]);
-
-  // useEffect(() => {
-  //   if (cookies.rememberAddress === undefined) {
-  //     if (Account !== null) {
-  //       setCookie("rememberAddress", Account, { maxAge: 30 });
-  //     }
-  //   } else {
-  //     removeCookie("rememberAddress");
-  //   }
-  // }, [Account]);
+  }, [Account]);
 
   useEffect(() => {
     window.addEventListener("scroll", () => {
@@ -344,11 +213,6 @@ const Header = () => {
       return null;
     }
   }
-  useEffect(() => {
-    if (web3Modal.cachedProvider) {
-      connectWallet();
-    }
-  }, [Owner]);
 
   async function checkMyBalance(account) {
     if (TokenClaimContract !== null && TokenClaimContract !== "dismatch") {
@@ -362,107 +226,105 @@ const Header = () => {
     }
   }
 
-  // useEffect(() => {
-  //   if (!onboarding.current) {
-  //     onboarding.current = new MetaMaskOnboarding();
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (!onboarding.current) {
+      onboarding.current = new MetaMaskOnboarding();
+    }
+  }, []);
 
-  // useEffect(async () => {
-  //   if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-  //     if ((await window.ethereum.selectedAddress) !== null) {
-  //       const walletAddress = utils.getAddress(
-  //         await window.ethereum.selectedAddress
-  //       );
-  //       await axios
-  //         .post("http://127.0.0.1:5000/user/login", { address: walletAddress })
-  //         .then(async (res) => {
-  //           if (res.data.nick !== "noname") {
-  //             setAccounts([walletAddress]);
-  //           }
-  //         });
-  //     }
-  //   }
-  // }, [Owner]);
+  useEffect(async () => {
+    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+      if ((await window.ethereum.selectedAddress) !== null) {
+        const walletAddress = utils.getAddress(
+          await window.ethereum.selectedAddress
+        );
+        await axios
+          .post("http://127.0.0.1:5000/user/login", { address: walletAddress })
+          .then(async (res) => {
+            if (res.data.nick !== "noname") {
+              setAccounts([walletAddress]);
+            }
+          });
+      }
+    }
+  }, [Owner]);
 
-  // useEffect(async () => {
-  //   if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-  //     if (account.length > 0) {
-  //       const getAddress = utils.getAddress(account);
-  //       const checkUser = await axios
-  //         .post("http://127.0.0.1:5000/user/login", {
-  //           address: getAddress,
-  //           owner: Owner,
-  //         })
-  //         .then((res) => res.data.nick);
+  useEffect(async () => {
+    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+      if (accounts.length > 0) {
+        const getAddress = utils.getAddress(accounts[0]);
+        const checkUser = await axios
+          .post("http://127.0.0.1:5000/user/login", {
+            address: getAddress,
+            owner: Owner,
+          })
+          .then((res) => res.data.nick);
 
-  //       dispatch(
-  //         updateAccounts({
-  //           wallet: true,
-  //           account: getAddress,
-  //           isUser: checkUser === "noname" ? false : true,
-  //           MyNFTlists: await MyList(getAddress),
-  //           Mybalance: await checkMyBalance(getAddress),
-  //         })
-  //       );
-  //       await checkOwner(getAddress);
-  //       setDisabled(true);
-  //       await window.ethereum.on("accountsChanged", async (accounts) => {
-  //         if (accounts[0] === undefined) {
-  //           setDisabled(false);
-  //         } else {
-  //           setAccount(accounts);
-  //         }
-  //       });
-  //       // onboarding.current.stopOnboarding();
-  //       await window.ethereum.on("chainChanged", (_chainId) =>
-  //         window.location.reload()
-  //       );
-  //     } else {
-  //       setIsOwner(false);
-  //       setDisabled(false);
-  //     }
-  //   }
-  // }, [account]);
+        dispatch(
+          updateAccounts({
+            wallet: true,
+            account: getAddress,
+            isUser: checkUser === "noname" ? false : true,
+            MyNFTlists: await MyList(getAddress),
+            Mybalance: await checkMyBalance(getAddress),
+          })
+        );
+        await checkOwner(getAddress);
+        setDisabled(true);
+        await window.ethereum.on("accountsChanged", async (accounts) => {
+          if (accounts[0] === undefined) {
+            setDisabled(false);
+          } else {
+            setAccounts(accounts);
+          }
+        });
+        // onboarding.current.stopOnboarding();
+        await window.ethereum.on("chainChanged", (_chainId) =>
+          window.location.reload()
+        );
+      } else {
+        setIsOwner(false);
+        setDisabled(false);
+      }
+    }
+  }, [accounts]);
 
-  // useEffect(async () => {
-  //   if (isOwner) {
-  //     const getAddress = utils.getAddress(account);
-  //     await axios
-  //       .post("http://127.0.0.1:5000/user/owner", { address: getAddress })
-  //       .then((res) => console.log(res.data.message));
-  //   }
-  // }, [isOwner]);
+  useEffect(async () => {
+    if (isOwner) {
+      const getAddress = utils.getAddress(accounts[0]);
+      await axios
+        .post("http://127.0.0.1:5000/user/owner", { address: getAddress })
+        .then((res) => console.log(res.data.message));
+    }
+  }, [isOwner]);
 
   const toggleMenu = () => menuRef.current.classList.toggle("active__menu");
 
-  // async function checkWallet() {
-  //   if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-  //     window.ethereum
-  //       .request({ method: "eth_requestAccounts" })
-  //       .then((newAccounts) => setAccounts(newAccounts));
-  //   } else {
-  //     if (
-  //       window.confirm(
-  //         "메타마스크 설치가 필요합니다.\n설치페이지로 이동하시겠습니까?"
-  //       )
-  //     ) {
-  //       onboarding.current.startOnboarding();
-  //     }
-  //   }
-  // }
-
-  const walletButton = (isDisabled) => {
-    if (isDisabled === false) {
-      return (
-        <button className="connect_btn" onClick={connectWallet}>
-          <span>
-            <i className="ri-wallet-line"></i>
-          </span>
-          Connect Wallet
-        </button>
-      );
+  async function checkWallet() {
+    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+      window.ethereum
+        .request({ method: "eth_requestAccounts" })
+        .then((newAccounts) => setAccounts(newAccounts));
+    } else {
+      if (
+        window.confirm(
+          "메타마스크 설치가 필요합니다.\n설치페이지로 이동하시겠습니까?"
+        )
+      ) {
+        onboarding.current.startOnboarding();
+      }
     }
+  }
+
+  const walletButton = () => {
+    return (
+      <button className="connect_btn" onClick={() => checkWallet()}>
+        <span>
+          <i className="ri-wallet-line"></i>
+        </span>
+        Connect Wallet
+      </button>
+    );
   };
 
   return (
@@ -542,14 +404,15 @@ const Header = () => {
               })}
             </ul>
           </div>
-
-          {/* <div className="web3__modal">
-            {!account ? (
-              <Button onClick={connectWallet}>Connect Wallet</Button>
-            ) : (
-              <Button onClick={disconnect}>Disconnect</Button>
-            )}
-          </div> */}
+          {/* web3modal 임시 버튼 */}
+          <div className="web3__modal">
+            <Button
+              text="Connect To Wallet"
+              onClick={() => {
+                connectWallet();
+              }}
+            />
+          </div>
 
           <div className="nav__right">
             <span className="mobile__menu">
@@ -562,20 +425,14 @@ const Header = () => {
             </div>
 
             {isDisabled === false ? (
-              walletButton(isDisabled)
+              walletButton()
             ) : (
               <div>
-                <button className="connect_btn" onClick={disconnect}>
-                  <span>
-                    <i className="ri-wallet-line"></i>
-                  </span>
-                  Disconnect
-                </button>
                 <div className="mypage__user__icon">
                   <Link to="/mypage" hidden={!isUser}>
                     <i className="ri-user-3-line"></i>
                   </Link>
-                  {account}
+                  {utils.getAddress(accounts[0])}
                 </div>
               </div>
             )}
