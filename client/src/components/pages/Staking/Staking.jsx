@@ -6,6 +6,7 @@ import { Group } from "@visx/group";
 import { Text } from "@visx/text";
 
 import "./staking.css";
+import { useSelector } from "react-redux";
 
 const Staking = () => {
   // 아래는 임시데이터
@@ -55,7 +56,7 @@ const Staking = () => {
       clearInterval(timerid.current);
       setIsStop(true);
     };
-  }, [defaultTime]);
+  }, [timer]);
 
   const [active, setActive] = useState(null);
   const width = 280;
