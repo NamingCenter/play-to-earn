@@ -11,9 +11,9 @@ function App() {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(connect());
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      dispatch(getWeb3());
-    }
+    // if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+    //     dispatch(getWeb3());
+    // }
   }, [dispatch]);
   return (
     <>
