@@ -6,23 +6,33 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import Clock from "./Clock";
 import Carousel from "react-elastic-carousel";
+import { Link } from "react-router-dom";
 
 const Ranking = () => {
   const [loading, setLoading] = useState(true);
   const [toggleState, setToggleState] = useState(1);
   const account = useSelector((state) => state.AppState.account);
-  const timer = useSelector((state) => state.AppState.timer);
-  const [timerDays, setTimerDays] = useState();
-  const [timerHours, setTimerHours] = useState();
-  const [timerMinutes, setTimerMinutes] = useState();
-  const [timerSeconds, setTimerSeconds] = useState();
+
+  const [defaultTime, setdefaultTime] = useState();
+  const [timerDays, setTimerDays] = useState("00");
+  const [timerHours, setTimerHours] = useState("00");
+  const [timerMinutes, setTimerMinutes] = useState("00");
+  const [timerSeconds, setTimerSeconds] = useState("00");
   const timerid = useRef(null);
 
   const [isStop, setIsStop] = useState(false);
 
+  useEffect(async () => {
+    const count = await axios
+      .get(`http://localhost:5000/user/time`)
+      .then((res) => res.data);
+    setdefaultTime(parseInt(count.count));
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     timerid.current = setInterval(async () => {
-      const countdownDate = new Date(timer).getTime();
+      const countdownDate = new Date(defaultTime).getTime();
 
       const now = new Date().getTime();
       const distance = countdownDate - now;
@@ -45,7 +55,7 @@ const Ranking = () => {
       clearInterval(timerid.current);
       setIsStop(true);
     };
-  }, [timer]);
+  }, [defaultTime]);
 
   const toggleTab = (index) => {
     setToggleState(index);
@@ -298,6 +308,9 @@ const Ranking = () => {
                 timerMinutes={timerMinutes}
                 timerSeconds={timerSeconds}
               />
+              <button className="aat__token" href="/mypage">
+                <Link to={`/mypage`}>Check your AAT Balance</Link>
+              </button>
             </Col>
           </Row>
         </div>
