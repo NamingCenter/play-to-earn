@@ -6,7 +6,6 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import Clock from "./Clock";
 import Carousel from "react-elastic-carousel";
-import { Link } from "react-router-dom";
 
 const Ranking = () => {
   const [loading, setLoading] = useState(true);
@@ -14,10 +13,10 @@ const Ranking = () => {
   const account = useSelector((state) => state.AppState.account);
 
   const [defaultTime, setdefaultTime] = useState();
-  const [timerDays, setTimerDays] = useState("00");
-  const [timerHours, setTimerHours] = useState("00");
-  const [timerMinutes, setTimerMinutes] = useState("00");
-  const [timerSeconds, setTimerSeconds] = useState("00");
+  const [timerDays, setTimerDays] = useState();
+  const [timerHours, setTimerHours] = useState();
+  const [timerMinutes, setTimerMinutes] = useState();
+  const [timerSeconds, setTimerSeconds] = useState();
   const timerid = useRef(null);
 
   const [isStop, setIsStop] = useState(false);
@@ -75,7 +74,6 @@ const Ranking = () => {
         })
         .catch((error) => {
           setError(error);
-          window.location.href = "/error";
         });
     }
     setLoading(false);
@@ -86,20 +84,10 @@ const Ranking = () => {
       .post(`http://localhost:5000/game/weekly`)
       .then((response) => {
         const data = response.data;
-        const sortData = data.map((v, i) => {
-          const test = v.sort((a, b) => {
-            if (a.games > b.games) return 1;
-            if (a.games < b.games) return -1;
-            if (a.rank < b.rank) return -1;
-            if (a.rank > b.rank) return 1;
-          });
-          return test;
-        });
-        setWeekly(sortData);
+        setWeekly(data);
       })
       .catch((error) => {
         setError(error);
-        window.location.href = "/error";
       });
     setLoading(false);
   }, [account]);
@@ -130,29 +118,15 @@ const Ranking = () => {
     const temp = [];
     for (let i = 0; i < form.length; i++) {
       const result = [];
-      result.push(
-        <p key={i + "week"} className="weekly_w">
-          {i + 1}주차
-        </p>
-      );
+      result.push(<p>{i + 1}주차</p>);
       for (let k = 0; k < form[i].length; k++) {
         if (form[i][k] === undefined) {
           result.push(<p key={k}> 공석 </p>);
         } else {
           result.push(
-            <Row
-              key={k}
-              className="weekly"
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                width: "120%",
-              }}
-            >
-              <Col style={{ width: "40%" }}>{form[i][k].games}</Col>
-              <Col style={{ width: "40%" }}>{form[i][k].rank}등 :</Col>
-              <Col style={{ width: "40%" }}>{form[i][k].nick}</Col>
-            </Row>
+            <p key={k}>
+              {form[i][k].games} / {form[i][k].rank}등 / {form[i][k].nick}
+            </p>
           );
         }
       }
@@ -181,7 +155,7 @@ const Ranking = () => {
                   className={toggleState === 2 ? "tabs active-tabs" : "tabs"}
                   onClick={() => toggleTab(2)}
                 >
-                  Weekly Ranking
+                  form Ranking
                 </button>
                 <button
                   className={toggleState === 3 ? "tabs active-tabs" : "tabs"}
@@ -308,9 +282,6 @@ const Ranking = () => {
                 timerMinutes={timerMinutes}
                 timerSeconds={timerSeconds}
               />
-              <button className="aat__token" href="/mypage">
-                <Link to={`/mypage`}>Check your AAT Balance</Link>
-              </button>
             </Col>
           </Row>
         </div>
