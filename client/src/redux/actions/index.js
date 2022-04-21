@@ -1,7 +1,6 @@
 import CreateNFT from "../../contracts/CreateNFT.json";
 import AmusementArcadeToken from "../../contracts/AmusementArcadeToken.json";
 import TokenClaim from "../../contracts/TokenClaim.json";
-import StakingToken from "../../contracts/StakingToken.json";
 import Web3 from "web3";
 import axios from "axios";
 
@@ -14,7 +13,6 @@ export const UPDATE_MYLISTS = "UPDATE_MYLISTS";
 export const UPDATE_MYBALANCE = "UPDATE_MYBALANCE";
 export const MY_MODAL = "MY_MODAL";
 export const SET_TIMER = "SET_TIMER";
-export const CHANGE_CHAINID = "CHANGE_CHAINID";
 
 export const SET_NFTS = "SET_NFTS";
 export const SELECTED_NFT = "SELECTED_NFT";
@@ -99,13 +97,6 @@ export const setTimer = (payload) => {
   };
 };
 
-export const changeChainid = (payload) => {
-  return {
-    type: CHANGE_CHAINID,
-    payload: payload,
-  };
-};
-
 export function connect() {
   return async (dispatch) => {
     try {
@@ -113,13 +104,11 @@ export function connect() {
       await web3.eth.net
         .isListening()
         .then(async (res) => {
-          const givenNetworkId = await web3.eth.net.getId();
-          const networkId = Object.keys(CreateNFT.networks)[0];
-          if (
-            parseInt(givenNetworkId) === parseInt(networkId) &&
-            res === true
-          ) {
-            const networkData_NFT = CreateNFT.networks[networkId];
+          const networkId = await web3.eth.net.getId();
+          const networkData_NFT = CreateNFT.networks[networkId];
+          const networkData_Token = AmusementArcadeToken.networks[networkId];
+          const networkData_TokenClaim = TokenClaim.networks[networkId];
+          if (networkData_NFT && networkData_Token) {
             const NFT_abi = CreateNFT.abi;
             const NFT_address = networkData_NFT.address;
             const CreateNFTContract = new web3.eth.Contract(
@@ -128,6 +117,7 @@ export function connect() {
             );
             const Owner = await CreateNFTContract.methods.owner().call();
             const lists = await CreateNFTContract.methods.Selllists().call();
+
             const listsForm = await Promise.all(
               lists.map(async (i) => {
                 const tokenURI = await CreateNFTContract.methods
@@ -154,7 +144,6 @@ export function connect() {
                 dispatch(
                   connectSuccess({
                     network: true,
-                    networkid: parseInt(givenNetworkId),
                     Owner: Owner,
                     timer: parseInt(res.data.count),
                     Selllists: listsForm,
@@ -177,70 +166,45 @@ export function connect() {
   };
 }
 
-export function getWeb3(Provider) {
+export function getWeb3() {
   return async (dispatch) => {
     try {
-      if (Provider !== undefined) {
-        console.log("프로바이더 인?");
-        const web3js = new Web3(Provider);
-        const givenNetworkId = await web3js.eth.net.getId();
-        const networkId = Object.keys(CreateNFT.networks)[0];
-        if (parseInt(givenNetworkId) === parseInt(networkId)) {
-          const networkData_NFT = CreateNFT.networks[networkId];
-          const networkData_Token = AmusementArcadeToken.networks[networkId];
-          const networkData_TokenClaim = TokenClaim.networks[networkId];
-          const networkData_StakingToken = StakingToken.networks[networkId];
-          const NFT_abi = CreateNFT.abi;
-          const NFT_address = networkData_NFT.address;
-          const CreateNFTContract = new web3js.eth.Contract(
-            NFT_abi,
-            NFT_address
-          );
-          const Token_abi = AmusementArcadeToken.abi;
-          const Token_address = networkData_Token.address;
-          const AmusementArcadeTokenContract = new web3js.eth.Contract(
-            Token_abi,
-            Token_address
-          );
-          const TokenClaim_abi = TokenClaim.abi;
-          const TokenClaim_address = networkData_TokenClaim.address;
-          const TokenClaimContract = new web3js.eth.Contract(
-            TokenClaim_abi,
-            TokenClaim_address
-          );
-          const StakingToken_abi = StakingToken.abi;
-          const StakingToken_address = networkData_StakingToken.address;
-          const StakingTokenContract = new web3js.eth.Contract(
-            StakingToken_abi,
-            StakingToken_address
-          );
-
-          dispatch(
-            callContract({
-              CreateNFTContract: CreateNFTContract,
-              AmusementArcadeTokenContract: AmusementArcadeTokenContract,
-              TokenClaimContract: TokenClaimContract,
-              StakingTokenContract: StakingTokenContract,
-            })
-          );
-        } else {
-          dispatch(
-            callContract({
-              CreateNFTContract: "dismatch",
-              AmusementArcadeTokenContract: "dismatch",
-              TokenClaimContract: "dismatch",
-              StakingTokenContract: "dismatch",
-            })
-          );
-        }
-      } else {
-        console.log("프로바이더 아웃");
+      console.log("프로바이더 변경?");
+      const web3js = new Web3(Web3.givenProvider);
+      const givenNetworkId = await web3js.eth.net.getId();
+      const networkId = Object.keys(CreateNFT.networks)[0];
+      if (parseInt(givenNetworkId) === parseInt(networkId)) {
+        const networkData_NFT = CreateNFT.networks[givenNetworkId];
+        const networkData_Token = AmusementArcadeToken.networks[givenNetworkId];
+        const networkData_TokenClaim = TokenClaim.networks[givenNetworkId];
+        const NFT_abi = CreateNFT.abi;
+        const NFT_address = networkData_NFT.address;
+        const CreateNFTContract = new web3js.eth.Contract(NFT_abi, NFT_address);
+        const Token_abi = AmusementArcadeToken.abi;
+        const Token_address = networkData_Token.address;
+        const AmusementArcadeTokenContract = new web3js.eth.Contract(
+          Token_abi,
+          Token_address
+        );
+        const TokenClaim_abi = TokenClaim.abi;
+        const TokenClaim_address = networkData_TokenClaim.address;
+        const TokenClaimContract = new web3js.eth.Contract(
+          TokenClaim_abi,
+          TokenClaim_address
+        );
         dispatch(
           callContract({
-            CreateNFTContract: null,
-            AmusementArcadeTokenContract: null,
-            TokenClaimContract: null,
-            StakingTokenContract: null,
+            CreateNFTContract: CreateNFTContract,
+            AmusementArcadeTokenContract: AmusementArcadeTokenContract,
+            TokenClaimContract: TokenClaimContract,
+          })
+        );
+      } else {
+        dispatch(
+          callContract({
+            CreateNFTContract: "dismatch",
+            AmusementArcadeTokenContract: "dismatch",
+            TokenClaimContract: "dismatch",
           })
         );
       }
