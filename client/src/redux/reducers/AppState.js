@@ -65,7 +65,6 @@ export default function (state = initialState, action) {
     case UPDATE_ACCOUNT:
       return {
         ...state,
-        chainid: action.payload.chainid,
         wallet: action.payload.wallet,
         account: action.payload.account,
         isUser: action.payload.isUser,

@@ -4,6 +4,7 @@ import TokenClaim from "../../contracts/TokenClaim.json";
 import StakingToken from "../../contracts/StakingToken.json";
 import Web3 from "web3";
 import axios from "axios";
+import { utils } from "ethers";
 
 export const APP_STATE = "APP_STATE";
 export const CONNECTION_FAILED = "CONNECTION_FAILED";
@@ -149,6 +150,7 @@ export function connect() {
             );
 
             const Owner = await CreateNFTContract.methods.owner().call();
+            console.log(Owner);
             const lists = await CreateNFTContract.methods.Selllists().call();
 
             const listsForm = await Promise.all(
