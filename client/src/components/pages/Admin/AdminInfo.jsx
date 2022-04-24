@@ -27,8 +27,7 @@ const AdminInfo = () => {
       const contractbalance = await TokenClaimContract.methods
         .contractbalance()
         .call();
-      console.log(contractbalance);
-      setAmount(utils.formatEther(contractbalance));
+      setAmount(utils.formatUnits(contractbalance, 18));
     }
   }, [TokenClaimContract]);
 
@@ -37,14 +36,13 @@ const AdminInfo = () => {
       const totalSupply = await AmusementArcadeTokenContract.methods
         .totalSupply()
         .call();
-      console.log(totalSupply);
-      setTotalSupply(utils.formatEther(totalSupply));
+      setTotalSupply(utils.formatUnits(totalSupply, 18));
     }
   }, [AmusementArcadeTokenContract]);
 
   useEffect(async () => {
     await axios
-      .post("http://15.165.17.43:5000/ranking/sendbalance")
+      .post("http://127.0.0.1:5000/ranking/sendbalance")
       .then(async (res) => {
         const arry = await res.data.totalclaim;
         const result = arry.reduce((sum, element) => {
@@ -103,10 +101,8 @@ const AdminInfo = () => {
               <div className="InfoA__chart">
                 <i className="ri-pie-chart-box-line"></i>
               </div>
-              <div className="earing__text">
-                <div className="token__mybox">{totalNFT}</div>
-                <div className="token__mydesc">발행한 nfts 수 </div>
-              </div>
+              <div className="token__mybox">{totalNFT}</div>
+              <div className="token__mydesc">발행한 nfts 수 </div>
             </div>
           </div>
         </Carousel>
