@@ -9,6 +9,7 @@ const db = require("../models");
 const Likes = DB.sequelize.models.Likes;
 
 router.post("/", async (req, res, next) => {
+  console.log(req.body.tokenId);
   const nft = await Nfts.findOne({
     where: { tokenId: req.body.tokenId },
   });
