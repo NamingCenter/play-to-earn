@@ -11,10 +11,11 @@ import "./card.css";
 
 const Card = (props) => {
   const [expanded, setExpanded] = useState(false);
+  const [Loading, setLoading] = useState(true);
 
   return (
     <AnimateSharedLayout>
-      {expanded ? (
+      {/* {expanded ? (
         <ExpandedCard
           param={props}
           setExpanded={() => setExpanded(false)}
@@ -22,7 +23,9 @@ const Card = (props) => {
         />
       ) : (
         <CompactCard param={props} setExpanded={() => setExpanded(true)} />
-      )}
+      )} */}
+
+      <CompactCard param={props} setExpanded={() => setExpanded(true)} />
     </AnimateSharedLayout>
   );
 };
