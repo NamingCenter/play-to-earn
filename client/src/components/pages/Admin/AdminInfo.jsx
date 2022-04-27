@@ -7,6 +7,7 @@ import { utils } from "ethers";
 import "./admin-info.css";
 
 const AdminInfo = () => {
+  // const [Loading, setLoading] = useState(true);
   const Mybalance = useSelector((state) => state.AppState.Mybalance);
   const TokenClaimContract = useSelector(
     (state) => state.AppState.TokenClaimContract
@@ -29,6 +30,7 @@ const AdminInfo = () => {
         .call();
       setAmount(utils.formatUnits(contractbalance, 18));
     }
+    // setLoading(false);
   }, [TokenClaimContract]);
 
   useEffect(async () => {
@@ -38,6 +40,7 @@ const AdminInfo = () => {
         .call();
       setTotalSupply(utils.formatUnits(totalSupply, 18));
     }
+    // setLoading(false);
   }, [AmusementArcadeTokenContract]);
 
   useEffect(async () => {
@@ -50,6 +53,7 @@ const AdminInfo = () => {
         }, 0);
         setSendamount(result);
       });
+    // setLoading(false);
   }, []);
 
   useEffect(async () => {
@@ -57,6 +61,7 @@ const AdminInfo = () => {
       const lists = await CreateNFTContract.methods.totalNFTs().call();
       setTotalNFT(lists);
     }
+    // setLoading(false);
   }, [totalNFT, CreateNFTContract]);
 
   return (
