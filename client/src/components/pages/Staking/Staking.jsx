@@ -281,7 +281,7 @@ const Staking = () => {
             <hr />
             <ul>
               <li>
-                <span>Available NFT balance to stake : </span>
+                <span>Available AAT balance to stake : {Mybalance}</span>
                 <br />
                 <input
                   type="text"
@@ -345,7 +345,7 @@ const Staking = () => {
               </li>
               <br />
               <li>
-                <span>AATtoken staked : </span>
+                <span>AAT token staked : {stakingAmount}</span>
                 <br />
                 <input
                   type="number"
@@ -404,7 +404,7 @@ const Staking = () => {
               </li>
               <li>
                 <br />
-                <span>Pending AAT rewards : </span>
+                <span>Pending AAT rewards : {stake}</span>
                 <br />
                 <button
                   className="claim__rewards"
@@ -421,7 +421,7 @@ const Staking = () => {
                   Claim rewards
                 </button>
               </li>
-              <li>
+              {/* <li>
                 <button
                   onClick={async () => {
                     if (StakingTokenContract !== null) {
@@ -435,7 +435,7 @@ const Staking = () => {
                 >
                   TESTBUTTON
                 </button>
-              </li>
+              </li> */}
             </ul>
           </div>
         </Col>
