@@ -11,9 +11,11 @@ import SellModal from "../templete/SellModal";
 import { FaStar } from "react-icons/fa";
 import Badge from "react-bootstrap/Badge";
 import { useDispatch, useSelector } from "react-redux";
-import { mymodal, refreshSellLists } from "../../../redux/actions";
-import { utils } from "ethers";
-import axios from "axios";
+import {
+  mymodal,
+  updateMyLists,
+  updateSellLists,
+} from "../../../redux/actions";
 
 const NftSellCard = (props) => {
   const MyModal = useSelector((state) => state.AppState.MyModal);
@@ -22,18 +24,25 @@ const NftSellCard = (props) => {
   );
   const account = useSelector((state) => state.AppState.account);
   const Selllists = useSelector((state) => state.AppState.Selllists);
+  const MyNFTlists = useSelector((state) => state.AppState.MyNFTlists);
   const dispatch = useDispatch();
 
   const stars = Array(5).fill(1);
 
-  const [testdata, setTestdata] = useState(null);
   function sleep(ms) {
     const wakeUpTime = Date.now() + ms;
     while (Date.now() < wakeUpTime) {}
   }
+
   useEffect(() => {
-    setTestdata(props.item);
-  }, [props]);
+    return () => {
+      dispatch(
+        mymodal({
+          MyModal: false,
+        })
+      );
+    };
+  }, []);
 
   return (
     <div>
@@ -50,22 +59,10 @@ const NftSellCard = (props) => {
                 {props.item.formInput.name}
               </Link>
             </h5>
-            {/* 아래는 유저정보 변경시 > 아직 user 가 아닌 관리자만 nft 생성진행중 */}
-            {/* <div className="creator__info-wrapper">
-          <div className="creator__img">
-            <img src={creatorImg} alt="" />
-          </div>
-          <div className="creator__info">
-            <div className="creator">
-              <h6>Created By</h6>
-              <p>{creator}</p>
-            </div> */}
             <Col>
               <div className="bid__container">
                 <h6>Current Bid</h6>
-                <p>
-                  {parseInt(utils.formatEther(props.item.formInput.price))} AAT
-                </p>
+                <p>{props.item.formInput.price} AAT</p>
               </div>
               <Badge pill bg="light" text="dark" className="rare__badge">
                 rare : {props.item.formInput.rare}
@@ -114,7 +111,6 @@ const NftSellCard = (props) => {
                 );
               }}
             >
-              {/* <button className="sell__btn" onClick={() => setShowModal(true)}> */}
               <i className="ri-price-tag-3-line"></i>
               Sell
             </button>
@@ -124,20 +120,41 @@ const NftSellCard = (props) => {
             onClick={async () => {
               if (CreateNFTContract !== null) {
                 if (window.confirm("판매를 취소하시겠습니까?")) {
+                  props.setLoading(true);
                   await CreateNFTContract.methods
                     .changeSellState(Number(props.item.formInput.tokenid))
                     .send({ from: account, gas: 3000000 })
                     .then(async (res) => {
-                      console.log(res);
-                      console.log(Selllists);
-                      const updateSellLists = Selllists.filter(
-                        (lists) =>
-                          Number(lists.formInput.tokenId) !==
+                      const index = MyNFTlists.findIndex((lists) => {
+                        if (
+                          Number(lists.formInput.tokenid) ===
                           Number(props.item.formInput.tokenid)
-                      );
-                      dispatch(
-                        refreshSellLists({ Selllists: updateSellLists })
-                      );
+                        ) {
+                          return true;
+                        }
+                      });
+                      MyNFTlists[index].formInput.sell = false;
+                      dispatch(updateMyLists({ MyNFTlists: [...MyNFTlists] }));
+
+                      const sellindex = Selllists.findIndex((lists) => {
+                        if (
+                          Number(lists.formInput.tokenid) ===
+                          Number(props.item.formInput.tokenid)
+                        ) {
+                          return true;
+                        }
+                      });
+                      if (sellindex !== -1) {
+                        Selllists.splice(sellindex, 1);
+                        dispatch(
+                          updateSellLists({
+                            Selllists: Selllists,
+                          })
+                        );
+                      }
+                      sleep(2000);
+                      props.setLoading(false);
+                      props.setCheckChange(!props.checkChange);
                     });
                 }
               }
