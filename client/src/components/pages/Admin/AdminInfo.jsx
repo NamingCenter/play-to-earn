@@ -23,12 +23,17 @@ const AdminInfo = () => {
   const [sendamount, setSendamount] = useState(null);
   const [totalSupply, setTotalSupply] = useState(null);
 
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
   useEffect(async () => {
     if (TokenClaimContract !== null) {
       const contractbalance = await TokenClaimContract.methods
         .contractbalance()
         .call();
-      setAmount(utils.formatUnits(contractbalance, 18));
+      console.log(contractbalance);
+      setAmount(utils.formatEther(contractbalance));
     }
     // setLoading(false);
   }, [TokenClaimContract]);
@@ -38,14 +43,15 @@ const AdminInfo = () => {
       const totalSupply = await AmusementArcadeTokenContract.methods
         .totalSupply()
         .call();
-      setTotalSupply(utils.formatUnits(totalSupply, 18));
+      console.log(totalSupply);
+      setTotalSupply(utils.formatEther(totalSupply));
     }
     // setLoading(false);
   }, [AmusementArcadeTokenContract]);
 
   useEffect(async () => {
     await axios
-      .post("http://127.0.0.1:5000/ranking/sendbalance")
+      .post("http://localhost:5000/ranking/sendbalance")
       .then(async (res) => {
         const arry = await res.data.totalclaim;
         const result = arry.reduce((sum, element) => {

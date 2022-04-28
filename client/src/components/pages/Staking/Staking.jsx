@@ -46,10 +46,13 @@ const Staking = () => {
   const [stakerId, setStakerId] = useState(0);
   const [stakers, setStakers] = useState(0);
   const check = useRef(null);
-
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
   useEffect(async () => {
     await axios
-      .post("http://127.0.0.1:5000/staking/amount", {
+      .post("http://localhost:5000/staking/amount", {
         address: account,
       })
       .then(async (res) => {
@@ -60,6 +63,23 @@ const Staking = () => {
             .stakers(res.data.stakerId)
             .call();
           setUnclaimreward(utils.formatEther(result.unclaimedRewards));
+        }
+      });
+  }, []);
+
+  useEffect(async () => {
+    await axios
+      .post("http://localhost:5000/staking/rewards", { address: account })
+      .then((res) => {
+        const checkstaking = res.data.checkstaking;
+        const checkuser = res.data.checkuser;
+        console.log(checkuser);
+        if (checkuser !== null) {
+          setStakerId(checkuser.stakerId);
+          setStakers(checkstaking.length);
+          setStakingAmount(checkuser.amount);
+        } else {
+          setStakers(checkstaking.length);
         }
       });
   }, []);
@@ -321,7 +341,7 @@ const Staking = () => {
                               );
                               console.log(amount);
                               await axios
-                                .post("http://127.0.0.1:5000/staking", {
+                                .post("http://localhost:5000/staking", {
                                   stakerId: stakerId,
                                   address: address,
                                   amount: amount,
@@ -377,7 +397,7 @@ const Staking = () => {
                             )
                           );
                           await axios
-                            .post("http://127.0.0.1:5000/staking", {
+                            .post("http://localhost:5000/staking", {
                               stakerId: stakerId,
                               address: address,
                               amount: amount,
