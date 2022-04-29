@@ -3,40 +3,35 @@ import { motion, useMotionValue, useTransform } from "framer-motion";
 
 import "./evolution.css";
 
-import temporaryData from "../../../assets/images/free.png";
 import EvoDetails from "./EvoDetails";
 import { Col, Container, Row } from "reactstrap";
-import NftCard from "../../ui/templete/NftCard";
 import { Link, Route, Routes } from "react-router-dom";
 import MyDash from "../Mypage/MyDash";
-import SellModal from "../../ui/templete/SellModal";
 import EvoProfile from "./EvoProfile";
 
 import { FaStar } from "react-icons/fa";
 import Badge from "react-bootstrap/Badge";
-import EvoBackGround from "./EvoBackGround";
 import { useDispatch, useSelector } from "react-redux";
 import { utils } from "ethers";
 
-import axios from "axios";
-
 import { updateLists } from "../../../redux/actions/index";
 
-const Evolution = (props) => {
+import { css } from "@emotion/react";
+import FadeLoader from "react-spinners/FadeLoader";
+
+const Evolution = () => {
   const dispatch = useDispatch();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotateX = useTransform(y, [-100, 100], [30, -30]);
   const rotateY = useTransform(x, [-100, 100], [-30, 30]);
 
-  const [Loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [Loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
 
   const [EvoProfileModal, setEvoProfileModal] = useState(false);
   const [imageURL, setImageURL] = useState([]);
   const [beforeEvo, setBeforeEvo] = useState(null);
-  //   const [afterEvo, setAfterEvo] = useState("noname");
 
   const [afterEvo, setAfterEvo] = useState({
     fileUrl: null,
@@ -58,12 +53,37 @@ const Evolution = (props) => {
     (state) => state.AppState.CreateNFTContract
   );
 
-  useEffect(() => {
-    setLoading(null);
-  }, []);
+  const override = css`
+    display: block;
+    margin: 0 auto;
+    border-color: #5900ff;
+    width: 100%;
+    height: 100%;
+    background: #34343465;
+  `;
 
   return (
     <Fragment>
+      {Loading ? (
+        <div
+          className={Loading ? "parentDisable" : ""}
+          width="100%"
+          height="100%"
+        >
+          <div className="overlay-box">
+            <FadeLoader
+              size={150}
+              color={"#ffffff"}
+              css={override}
+              loading={Loading}
+              z-index={"1"}
+              text="Loading your content..."
+            />
+          </div>
+        </div>
+      ) : (
+        false
+      )}
       <Row className="row__box">
         <Col md="5">
           <div className="card__wrapper">
@@ -127,6 +147,7 @@ const Evolution = (props) => {
                     NFTId: NFTId,
                     setAfterEvo: setAfterEvo,
                   }}
+                  setLoading={setLoading}
                 />
                 <div className="evolu__details" />
               </div>
@@ -153,7 +174,7 @@ const Evolution = (props) => {
                 <i className="ri-copper-diamond-line"></i>
               </div>
               <div className="earing__text">
-                <div className="token__mybox"> 2,000,000 Token</div>
+                <div className="token__mybox"> 50 AAT</div>
                 <div className="token__mydesc">Balance</div>
               </div>
             </div>

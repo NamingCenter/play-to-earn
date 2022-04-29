@@ -11,13 +11,21 @@ import { Container, Row, Col } from "reactstrap";
 import "./market.css";
 import { useSelector } from "react-redux";
 
+import { css } from "@emotion/react";
+import FadeLoader from "react-spinners/FadeLoader";
+
 import axios from "axios";
 
 const pageSize = 10;
 
 const Market = () => {
   const Selllists = useSelector((state) => state.AppState.Selllists);
-  const [Loading, setLoading] = useState(true);
+  const override = css`
+    display: block;
+    margin: 0 auto;
+    border-color: #5900ff;
+  `;
+  const [Loading, setLoading] = useState(false);
 
   const [nftArray, setnftArray] = useState([]);
 
@@ -30,16 +38,12 @@ const Market = () => {
   const [endPosition, setEndPosition] = useState(4);
 
   useEffect(() => {
+    console.log(Selllists);
     if (Selllists !== null) {
       setnftArray([...Selllists].reverse());
       setLoading(null);
     }
   }, [Selllists]);
-
-  useEffect(() => {
-    console.log(nftArray);
-  }, [nftArray]);
-
   // ============ 페이징 =========================================
 
   const handlePagination = (index) => {
@@ -57,7 +61,7 @@ const Market = () => {
   };
 
   const handleNext = () => {
-    if (endPosition < data.length) {
+    if (endPosition > data.length) {
       setCurrentIndex(currentIndex + quantityPageRef.current);
       setEndPosition(endPosition + quantityPageRef.current);
     }
@@ -178,89 +182,103 @@ const Market = () => {
     }
   };
 
-  if (Loading) {
-    return (
-      <div>
-        잠시만 기다려 주세요
-        <ReactLoaing type={"bars"} color={"purple"} height={375} width={375} />
-      </div>
-    );
-  } else {
-    return (
-      <>
-        <CommonSection title={"Market Place"} />
-
-        <div className="market__box">
-          <Container>
-            <Row>
-              <Col lg="12" className="mb-5">
-                <div className="market__product__filter">
-                  <div className="filter__left">
-                    <div className="all__category__filter">
-                      <select onChange={(e) => handleStar(e)}>
-                        <option value="level">STAR LEVEL</option>
-                        <option value="one">one</option>
-                        <option value="two">two</option>
-                        <option value="three">three</option>
-                        <option value="four">four</option>
-                        <option value="five">five</option>
-                      </select>
-                    </div>
-                    <div className="all__items__filter">
-                      <select onChange={(e) => handleRare(e)}>
-                        <option value="rarity">All Rarity</option>
-                        {/* 오름차순 */}
-                        <option value="ascending">Ascending</option>
-                        {/* 내림차순 */}
-                        <option value="descending">Descending</option>
-                      </select>
-                    </div>
+  return (
+    <>
+      <CommonSection title={"Market Place"} />
+      <div className="market__box">
+        {Loading ? (
+          <div
+            className={Loading ? "parentDisable" : ""}
+            width="100%"
+            height="100%"
+          >
+            <div className="overlay-box">
+              <FadeLoader
+                size={150}
+                color={"#ffffff"}
+                css={override}
+                loading={Loading}
+                z-index={"1"}
+                text="Loading your content..."
+              />
+            </div>
+          </div>
+        ) : (
+          false
+        )}
+        <Container>
+          <Row>
+            <Col lg="12" className="mb-5">
+              <div className="market__product__filter">
+                <div className="filter__left">
+                  <div className="all__category__filter">
+                    <select onChange={(e) => handleStar(e)}>
+                      <option value="level">STAR LEVEL</option>
+                      <option value="one">one</option>
+                      <option value="two">two</option>
+                      <option value="three">three</option>
+                      <option value="four">four</option>
+                      <option value="five">five</option>
+                    </select>
                   </div>
-
-                  <div className="filter__right">
-                    <select onChange={(e) => handleSort(e)}>
-                      <option value="sort">Sort By</option>
-                      <option value="high">High Rate [10~]</option>
-                      <option value="mid">Mid Rate [5~10]</option>
-                      <option value="low">Low Rate [1~5]</option>
+                  <div className="all__items__filter">
+                    <select onChange={(e) => handleRare(e)}>
+                      <option value="rarity">All Rarity</option>
+                      {/* 오름차순 */}
+                      <option value="ascending">Ascending</option>
+                      {/* 내림차순 */}
+                      <option value="descending">Descending</option>
                     </select>
                   </div>
                 </div>
-              </Col>
 
-              {nftArray.slice(currentIndex, endPosition).map((items, index) => (
-                <Col lg="3" md="4" sm="6" key={index} className="mb-4">
-                  <NftCard item={items}></NftCard>
-                </Col>
-              ))}
-            </Row>
-            <button className="btn__Paginate" onClick={handlePrev}>
-              Previous
-            </button>
-            {Array(Math.ceil(nftArray.length / quantityPageRef.current))
-              .fill(null)
-              .map((_, index) => (
-                <button
-                  className={`btn__Paginate ${
-                    currentIndex === 0 && index === currentIndex
-                      ? "active__btn"
-                      : index === currentIndex / quantityPageRef.current &&
-                        "active__btn"
-                  }`}
-                  key={index}
-                  onClick={() => handlePagination(index)}
-                >
-                  {index + 1}
-                </button>
-              ))}
-            <button className="btn__Paginate" onClick={handleNext}>
-              Next
-            </button>
-          </Container>
-        </div>
-      </>
-    );
-  }
+                <div className="filter__right">
+                  <select onChange={(e) => handleSort(e)}>
+                    <option value="sort">Sort By</option>
+                    <option value="high">High Rate [10~]</option>
+                    <option value="mid">Mid Rate [5~10]</option>
+                    <option value="low">Low Rate [1~5]</option>
+                  </select>
+                </div>
+              </div>
+            </Col>
+
+            {nftArray.slice(currentIndex, endPosition).map((items, index) => (
+              <Col lg="3" md="4" sm="6" key={index} className="mb-4">
+                <NftCard
+                  item={items}
+                  default={false}
+                  setLoading={setLoading}
+                ></NftCard>
+              </Col>
+            ))}
+          </Row>
+          <button className="btn__Paginate" onClick={handlePrev}>
+            Previous
+          </button>
+          {Array(Math.ceil(nftArray.length / quantityPageRef.current))
+            .fill(null)
+            .map((_, index) => (
+              <button
+                className={`btn__Paginate ${
+                  currentIndex === 0 && index === currentIndex
+                    ? "active__btn"
+                    : index === currentIndex / quantityPageRef.current &&
+                      "active__btn"
+                }`}
+                key={index}
+                onClick={() => handlePagination(index)}
+              >
+                {index + 1}
+              </button>
+            ))}
+          <button className="btn__Paginate" onClick={handleNext}>
+            Next
+          </button>
+        </Container>
+      </div>
+    </>
+  );
 };
 
 export default Market;

@@ -43,7 +43,10 @@ function MineGame({ setShowModal }) {
     mynftlists();
     setLoading(false);
   }, [CreateNFTContract]);
-
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
   // 내 nft 리스트
   async function mynftlists() {
     const lists = await CreateNFTContract.methods
@@ -59,8 +62,9 @@ function MineGame({ setShowModal }) {
   }
 
   const sendPoint = async () => {
-    const point = runtime;
-    function multiply(point) {
+    const point = (1 / runtime) * 1000;
+
+    function test() {
       let rareD;
       if (myList.filter((v) => v.rare === "5").length >= 3) {
         rareD = 3;
@@ -73,6 +77,10 @@ function MineGame({ setShowModal }) {
       } else {
         rareD = 1;
       }
+      return rareD;
+    }
+
+    function jest() {
       let starD;
       if (myList.filter((v) => v.star === "5").length >= 3) {
         starD = 3;
@@ -87,17 +95,39 @@ function MineGame({ setShowModal }) {
       } else {
         starD = 1;
       }
-      return point * (starD * rareD);
+      return starD;
     }
-    await axios
-      .post(`http://localhost:5000/game/mine`, {
-        runtime: multiply(point),
-        account: account,
-      })
-      .then((res) => {
-        console.log(res.data);
-        alert("점수 등록 완료");
-      });
+
+    const mineData = await axios.post(`http://15.165.17.43:5000/game/mine`, {
+      runtime: point * (test() * jest()),
+      account: account,
+    });
+
+    if (mineData.data.bool === true) {
+      alert(
+        "지뢰점수는 { (1 / 클리어 초) * 1000 } 으로 환산됩니다. " +
+          "\n" +
+          "Score(" +
+          point +
+          ")점" +
+          " x ( " +
+          "Rare(" +
+          test() +
+          ")" +
+          " x " +
+          "Star(" +
+          jest() +
+          ") ) = " +
+          "Result(" +
+          point * (test() * jest()) +
+          ")점" +
+          "\n" +
+          mineData.data.message
+      );
+      window.location.href = "/game";
+    } else if (mineData.data.bool === false) {
+      alert(mineData.data.message);
+    }
   };
 
   const handleRightClick = (e, i, j) => {
@@ -172,7 +202,6 @@ function MineGame({ setShowModal }) {
     ) {
       setGameState(GAMESTATE.WIN);
       sendPoint();
-      console.log("WIN!");
     }
   };
 

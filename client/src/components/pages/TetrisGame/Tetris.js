@@ -57,12 +57,16 @@ const Tetris = ({ setShowModal }) => {
     (state) => state.AppState.CreateNFTContract
   );
   const [myList, setMyList] = useState([]);
+  const [prevScore, setPrevScore] = useState();
 
   useEffect(() => {
     mynftlists();
     setLoading(false);
   }, [CreateNFTContract]);
-
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
   // 내 nft 리스트
   async function mynftlists() {
     const lists = await CreateNFTContract.methods
@@ -76,6 +80,19 @@ const Tetris = ({ setShowModal }) => {
       });
     setMyList(lists);
   }
+
+  useEffect(async () => {
+    const tetrisData = await axios.post(
+      `http://15.165.17.43:5000/game/tetrisScore`,
+      { account: account }
+    );
+    if (tetrisData.data !== null) {
+      if (tetrisData.data.tetrisPoint !== null) {
+        setPrevScore(tetrisData.data.tetrisPoint);
+      }
+    }
+    setLoading(false);
+  }, [account]);
 
   useEffect(() => {
     canvasRef.current.width = CANVAS_WIDTH;
@@ -115,6 +132,7 @@ const Tetris = ({ setShowModal }) => {
       const scrollY = document.body.style.top;
       document.body.style.cssText = "";
       window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      sirtet.endGame();
     };
   }, []);
 
@@ -256,7 +274,7 @@ const Tetris = ({ setShowModal }) => {
     const sendPoint = async () => {
       const data = gameStats.score;
 
-      function multiply(data) {
+      function test() {
         let rareD;
         if (myList.filter((v) => v.rare === "5").length >= 3) {
           rareD = 3;
@@ -269,6 +287,10 @@ const Tetris = ({ setShowModal }) => {
         } else {
           rareD = 1;
         }
+        return rareD;
+      }
+
+      function jest() {
         let starD;
         if (myList.filter((v) => v.star === "5").length >= 3) {
           starD = 3;
@@ -283,17 +305,40 @@ const Tetris = ({ setShowModal }) => {
         } else {
           starD = 1;
         }
-        return data * (starD * rareD);
+        return starD;
       }
-      await axios
-        .post(`http://localhost:5000/game/tetris`, {
-          data: multiply(data),
+
+      const tetrisData = await axios.post(
+        `http://15.165.17.43:5000/game/tetris`,
+        {
+          data: data * (test() * jest()),
           account: account,
-        })
-        .then((res) => {
-          console.log(res.data);
-          alert("점수 등록 완료");
-        });
+        }
+      );
+
+      if (tetrisData.data.bool === true) {
+        alert(
+          "Score(" +
+            data +
+            ")점" +
+            " x ( " +
+            "Rare(" +
+            test() +
+            ")" +
+            " x " +
+            "Star(" +
+            jest() +
+            ") ) = " +
+            "Result(" +
+            data * (test() * jest()) +
+            ")점" +
+            "\n" +
+            tetrisData.data.message
+        );
+        window.location.href = "/game";
+      } else if (tetrisData.data.bool === false) {
+        alert(tetrisData.data.message);
+      }
     };
 
     if (!gameState.over) return null;
@@ -367,6 +412,13 @@ const Tetris = ({ setShowModal }) => {
               {countdownOverlay}
             </div>
             <div className="ui__group ml-3">
+              <div className="border rounded mb-3 p-3">
+                <h3 className="m-0">
+                  <u>Prev Score</u>
+                  <br />
+                  {prevScore === undefined ? "None" : prevScore}
+                </h3>
+              </div>
               <div className="border rounded mb-3 p-3">
                 <h3 className="m-0">
                   <u>Score</u>

@@ -4,54 +4,83 @@ import { create as ipfsHttpClient } from "ipfs-http-client";
 import axios from "axios";
 import { Container, Row, Col } from "reactstrap";
 import "./create.css";
+import { css } from "@emotion/react";
+import FadeLoader from "react-spinners/FadeLoader";
 
 ////////////////////////////////////////////////////////////////////
 /* 아래는 임시데이터와 img + 카드구조 & css */
 import CommonSection from "../../ui/templete/CommonSection";
 import NftCard from "../../ui/templete/NftCard";
-import { updateLists } from "../../../redux/actions/index";
+import { updateSellLists, updateMyLists } from "../../../redux/actions/index";
 
 import defaultImg from "../../../assets/images/defaultImg.gif";
 import { useNavigate } from "react-router-dom";
+import { utils } from "ethers";
 
 /////////////////////////////////////////////////////////////////////
 
 const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
-const Create = (props) => {
+const Create = () => {
+  const override = css`
+    display: block;
+    margin: 0 auto;
+    border-color: #5900ff;
+    width: 100%;
+    height: 100%;
+    background: #34343465;
+  `;
+  const [Loading, setLoading] = useState(false);
+
+  const AAT = useSelector(
+    (state) => state.AppState.AmusementArcadeTokenContract
+  );
+  const networkid = useSelector((state) => state.AppState.networkid);
+  const chainid = useSelector((state) => state.AppState.chainid);
   let Navi = useNavigate();
-  const [fileUrl, setFileUrl] = useState(defaultImg);
-  const [formInput, updateFormInput] = useState({
-    price: "00.00",
-    name: "noname",
-    description: "desc",
-    rare: "1",
-    star: "1",
+
+  const [NFTform, setNFTform] = useState({
+    fileUrl: defaultImg,
+    formInput: {
+      tokenid: 0,
+      price: 0,
+      star: 1,
+      rare: 1,
+      sell: false,
+      name: "noname",
+      description: "desc",
+    },
   });
   const Account = useSelector((state) => state.AppState.account);
   const CreateNFTContract = useSelector(
     (state) => state.AppState.CreateNFTContract
   );
+  const Selllists = useSelector((state) => state.AppState.Selllists);
+  const MyNFTlists = useSelector((state) => state.AppState.MyNFTlists);
   const dispatch = useDispatch();
 
-  useEffect(async () => {}, []);
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
 
   async function onChange(e) {
     const file = e.target.files[0];
-    console.log(file);
     try {
       const added = await client.add(file, {
         progress: (prog) => console.log(`received: ${prog}`),
       });
       const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-      setFileUrl(url);
+      NFTform.fileUrl = url;
+      setNFTform({ ...NFTform });
     } catch (error) {
       console.log("Error uploading file: ", error);
     }
   }
 
   async function uploadToIPFS() {
-    const { name, description, price } = formInput;
+    const fileUrl = NFTform.fileUrl;
+    const { name, description, price } = NFTform.formInput;
     if (!name || !description || !price || !fileUrl) return;
     /* first, upload to IPFS */
     const data = JSON.stringify({
@@ -71,97 +100,111 @@ const Create = (props) => {
 
   //nft작성
   async function CreateNFT() {
+    if (chainid === 1337 ? false : networkid === chainid ? false : true)
+      return alert("네트워크 아이디를 확인하세요");
     const url = await uploadToIPFS();
     /* next, create the item */
-    const price = parseInt(formInput.price);
+    const price = NFTform.formInput.price;
 
+    setLoading(true);
     await CreateNFTContract.methods
-      .CreateNFTinContract(url, price)
+      .CreateNFTinContract(url, utils.parseEther(price.toString()))
       .send({ from: Account, gas: 3000000 }, (error, data) => {
         if (!error) {
+          //sleep(2000);
           console.log("send ok");
         } else {
+          setLoading(false);
           console.log(error);
         }
       })
       .then(async (res) => {
-        const lists = await CreateNFTContract.methods.Selllists().call();
-
-        const listsForm = await Promise.all(
-          lists.map(async (i) => {
-            const tokenURI = await CreateNFTContract.methods
-              .tokenURI(i.tokenId)
-              .call();
-            const meta = await axios.get(tokenURI).then((res) => res.data);
-            let item = {
-              fileUrl: await meta.image,
-              formInput: {
-                tokenId: i.tokenId,
-                price: i.price,
-                star: i.star,
-                rare: i.rare,
-                name: await meta.name,
-                description: await meta.description,
-              },
-            };
-            return item;
-          })
-        );
-        dispatch(
-          updateLists({
-            Selllists: listsForm,
-          })
-        );
-
+        console.log(res);
+        const tokenId = res.events.NFTItemCreated.returnValues.tokenId;
+        const star = res.events.NFTItemCreated.returnValues.star;
+        const rare = res.events.NFTItemCreated.returnValues.rare;
+        const sell = res.events.NFTItemCreated.returnValues.sell;
+        const price = res.events.NFTItemCreated.returnValues.price;
+        const tokenURI = await CreateNFTContract.methods
+          .tokenURI(parseInt(tokenId))
+          .call();
+        //sleep(2000);
+        const meta = await axios.get(tokenURI).then((res) => res.data);
+        let NFTInfo = {
+          fileUrl: await meta.image,
+          formInput: {
+            tokenid: tokenId,
+            price: utils.formatEther(price),
+            star: star,
+            rare: rare,
+            sell: sell,
+            name: await meta.name,
+            description: await meta.description,
+          },
+        };
         await axios
-          .post(`http://localhost:5000/nfts`, {
-            tokenId: res.events.NFTItemCreated.returnValues.tokenId,
+          .post(`http://15.165.17.43:5000/nfts`, {
+            tokenId: tokenId,
             address: Account,
-            img: fileUrl,
-            name: formInput.name,
-            description: formInput.description,
-            price: formInput.price,
+            img: await meta.image,
+            name: await meta.name,
+            description: await meta.description,
+            price: utils.formatEther(price),
+            contractAddress: CreateNFTContract.options.address,
           })
           .then((res) => {
-            console.log(res.data.message);
             if (res.data.message === "ok") {
+              dispatch(
+                updateSellLists({
+                  Selllists: [...Selllists, NFTInfo],
+                })
+              );
+              dispatch(
+                updateMyLists({
+                  MyNFTlists: [...MyNFTlists, NFTInfo],
+                })
+              );
+              setLoading(false);
               alert("NFT발급 성공");
+              Navi("/market");
             } else {
+              setLoading(false);
               alert("이미 발급된 번호입니다.");
             }
           });
       });
   }
 
-  //nft 판매
-  async function sellnft(tokenId, price) {
-    await CreateNFTContract.methods
-      .sellMyNFTItem(tokenId, price)
-      .send({ from: Account, gas: 3000000 }, (error) => {
-        if (!error) {
-          console.log("send ok");
-        } else {
-          console.log(error);
-        }
-      });
-  }
-
   return (
     <>
       <CommonSection title="Create Item" />
-
       <div className="create__box">
+        {Loading ? (
+          <div
+            className={Loading ? "parentDisable" : ""}
+            width="100%"
+            height="100%"
+          >
+            <div className="overlay-box">
+              <FadeLoader
+                size={150}
+                color={"#ffffff"}
+                css={override}
+                loading={Loading}
+                z-index={"1"}
+                text="Loading your content..."
+              />
+            </div>
+          </div>
+        ) : (
+          false
+        )}
         <Container>
           <Row>
             <Col lg="3" md="4" sm="6">
               <h5 className="preview__item">Preview Item</h5>
               {/* 아래 이미지 preview 변경이 아직 안됨 */}
-              <NftCard
-                item={{
-                  fileUrl: fileUrl,
-                  formInput: formInput,
-                }}
-              />
+              <NftCard item={NFTform} default={true} />
               {/* {fileUrl && <NftCard item={item} src={fileUrl} />} */}
             </Col>
 
@@ -175,7 +218,7 @@ const Create = (props) => {
                       name="Asset"
                       className="upload__input"
                       width="350"
-                      src={fileUrl}
+                      src={NFTform.fileUrl}
                       onChange={onChange}
                     />
                     {/* {fileUrl && (
@@ -188,9 +231,10 @@ const Create = (props) => {
                     <input
                       type="text"
                       placeholder="Enter title"
-                      onChange={(e) =>
-                        updateFormInput({ ...formInput, name: e.target.value })
-                      }
+                      onChange={(e) => {
+                        NFTform.formInput.name = e.target.value;
+                        setNFTform({ ...NFTform });
+                      }}
                     />
                   </div>
 
@@ -198,30 +242,13 @@ const Create = (props) => {
                     <label htmlFor="">Price</label>
                     <input
                       type="number"
-                      placeholder="Enter price for one item (ETH)"
-                      onChange={(e) =>
-                        updateFormInput({ ...formInput, price: e.target.value })
-                      }
+                      placeholder="Enter price for one item (AAT)"
+                      onChange={(e) => {
+                        NFTform.formInput.price = e.target.value;
+                        setNFTform({ ...NFTform });
+                      }}
                     />
                   </div>
-
-                  {/* 경매 기능 추가시 부가정보 input */}
-                  {/* <div className="form__input">
-                    <label htmlFor="">Minimum Bid</label>
-                    <input type="number" placeholder="Enter minimum bid" />
-                  </div>
-
-                  <div className="date__form">
-                    <div className="form__input w-50">
-                      <label htmlFor="">Starting Date</label>
-                      <input type="date" />
-                    </div>
-
-                    <div className="form__input w-50">
-                      <label htmlFor="">Expiration Date</label>
-                      <input type="date" />
-                    </div>
-                  </div> */}
 
                   <div className="form__input">
                     <label htmlFor="">Description</label>
@@ -231,12 +258,10 @@ const Create = (props) => {
                       rows="8"
                       placeholder="Enter Description"
                       className="w-100"
-                      onChange={(e) =>
-                        updateFormInput({
-                          ...formInput,
-                          description: e.target.value,
-                        })
-                      }
+                      onChange={(e) => {
+                        NFTform.formInput.description = e.target.value;
+                        setNFTform({ ...NFTform });
+                      }}
                     ></textarea>
                   </div>
                 </form>
@@ -247,8 +272,6 @@ const Create = (props) => {
               className="create__btn"
               onClick={async () => {
                 await CreateNFT();
-                Navi("/market");
-                // window.location.href = "http://localhost:3000/market";
               }}
               style={{ marginTop: "20px" }}
             >

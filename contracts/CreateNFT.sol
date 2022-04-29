@@ -12,12 +12,12 @@ contract CreateNFT is ERC721URIStorage,Ownable  {
     constructor() ERC721("CreateNFT", "CNT") {
     }
 
-mapping(uint => NFTItem) public idToNFTItem;
+mapping(uint => NFTItem) private idToNFTItem;
 mapping(address=>bool) private getDefault;
 
     struct NFTItem {
       uint tokenId;
-      address payable owner;
+      address owner;
       uint price;
       uint rare;
       uint star;
@@ -28,12 +28,17 @@ mapping(address=>bool) private getDefault;
     event NFTItemCreated (
       uint indexed tokenId,
       address owner,
-      uint price,
+      uint price ,
             uint rare,
       uint star,
       bool getDefault,
       bool sell
     );
+
+
+    function WhoIsOwner(uint _tokenId) public view returns(address){
+      return idToNFTItem[_tokenId].owner;
+    }
 
     function CreateNFTItem(uint _tokenId, string memory _tokenURI, uint _price, bool _getDefault,bool _sell) private {
       _safeMint(msg.sender, _tokenId);
@@ -72,37 +77,42 @@ if(result>0&&result<50){
   return option;
 }
 
-function changeOption(uint _tokenId, address _msgsender) external returns(bool){
+function changeOption(uint _tokenId, address _msgsender) external returns(uint[] memory){
+
+  uint[]    memory EvoResult = new uint[](2);
   require(idToNFTItem[_tokenId].owner== _msgsender);
   uint rare = randomOption(99);
   uint star = randomOption(1);
   idToNFTItem[_tokenId].rare = rare;
   idToNFTItem[_tokenId].star = star;
-return true;
+  EvoResult[0]=rare;
+  EvoResult[1]=star;
+return EvoResult; 
 }
 
-    function getNFTItem(uint tokenId) public payable{
-        require(isApprovedForAll(owner(),msg.sender)== true);
-        require(getApproved(tokenId)!=msg.sender);
+    function getNFTItem(uint tokenId, address _buyer) external {
+        require(isApprovedForAll(owner(),_buyer)== true);
+        require(getApproved(tokenId)!=_buyer);
         require(idToNFTItem[tokenId].getDefault!=true);
-      uint price = idToNFTItem[tokenId].price;
       address owner = idToNFTItem[tokenId].owner;
-      require(msg.value==price);
       require(idToNFTItem[tokenId].sell==true);
-      _transfer(owner, msg.sender, tokenId);
-      payable(owner).transfer(msg.value);
-      _approve(msg.sender, tokenId);
-      idToNFTItem[tokenId].owner = payable(msg.sender);
+      _transfer(owner, _buyer, tokenId);
+      _approve(_buyer, tokenId);
+      idToNFTItem[tokenId].owner = _buyer;
       idToNFTItem[tokenId].sell=false;
     }
 
-      function sellMyNFTItem(uint256 tokenId, uint256 price) public {
-          require(isApprovedForAll(owner(),msg.sender)== true);
+      function sellMyNFTItem(uint tokenId, uint price) public {
+          require(isApprovedForAll(owner(),msg.sender)== true||msg.sender==owner());
           require(getApproved(tokenId)==msg.sender);
-      require(idToNFTItem[tokenId].sell == false);
       require(idToNFTItem[tokenId].getDefault!=true);
+      if(idToNFTItem[tokenId].sell == false){
+
       idToNFTItem[tokenId].price = price;
       idToNFTItem[tokenId].sell = true;
+      } else {
+      idToNFTItem[tokenId].price = price;
+      }
     }
 
     function MyNFTlists() public view returns (NFTItem[] memory) {
@@ -128,6 +138,12 @@ return true;
       return items;
     }
 
+function changeSellState (uint _tokenId) public returns(bool){
+ require(idToNFTItem[_tokenId].owner==msg.sender&&idToNFTItem[_tokenId].sell==true);
+idToNFTItem[_tokenId].sell=false;
+return true;
+}
+
     function OwnerSelllists() public view returns (NFTItem[] memory) {
       uint totalItemCount = _tokenIds.current();
       uint itemCount = 0;
@@ -142,29 +158,6 @@ return true;
       NFTItem[] memory items = new NFTItem[](itemCount);
       for (uint i = 0; i < totalItemCount; i++) {
         if (idToNFTItem[i + 1].owner == owner()) {
-          uint currentId = i + 1;
-          NFTItem storage currentItem = idToNFTItem[currentId];
-          items[currentIndex] = currentItem;
-          currentIndex += 1;
-        }
-      }
-      return items;
-    }
-
-    function UserSelllists() public view returns (NFTItem[] memory) {
-      uint totalItemCount = _tokenIds.current();
-      uint itemCount = 0;
-      uint currentIndex = 0;
-
-      for (uint i = 0; i < totalItemCount; i++) {
-        if (idToNFTItem[i + 1].owner != owner() && idToNFTItem[i + 1].sell==true) {
-          itemCount += 1;
-        }
-      }
-
-      NFTItem[] memory items = new NFTItem[](itemCount);
-      for (uint i = 0; i < totalItemCount; i++) {
-        if (idToNFTItem[i + 1].owner != owner()&& idToNFTItem[i + 1].sell==true) {
           uint currentId = i + 1;
           NFTItem storage currentItem = idToNFTItem[currentId];
           items[currentIndex] = currentItem;

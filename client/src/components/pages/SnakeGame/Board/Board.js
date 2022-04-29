@@ -18,12 +18,29 @@ const Board = () => {
   );
   const [Loading, setLoading] = useState(true);
   const [myList, setMyList] = useState([]);
+  const [prevScore, setPrevScore] = useState();
 
   useEffect(() => {
     mynftlists();
     setLoading(false);
   }, [CreateNFTContract]);
 
+  useEffect(async () => {
+    const snakeData = await axios.post(
+      `http://15.165.17.43:5000/game/snakeScore`,
+      { account: account }
+    );
+    if (snakeData.data !== null) {
+      if (snakeData.data.snakePoint !== null) {
+        setPrevScore(snakeData.data.snakePoint);
+      }
+    }
+    setLoading(false);
+  }, [account]);
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
   // 내 nft 리스트
   async function mynftlists() {
     const lists = await CreateNFTContract.methods
@@ -40,7 +57,8 @@ const Board = () => {
 
   const sendPoint = async () => {
     const point = score;
-    function multiply(point) {
+
+    function test() {
       let rareD;
       if (myList.filter((v) => v.rare === "5").length >= 3) {
         rareD = 3;
@@ -53,6 +71,10 @@ const Board = () => {
       } else {
         rareD = 1;
       }
+      return rareD;
+    }
+
+    function jest() {
       let starD;
       if (myList.filter((v) => v.star === "5").length >= 3) {
         starD = 3;
@@ -67,17 +89,37 @@ const Board = () => {
       } else {
         starD = 1;
       }
-      return point * (starD * rareD);
+      return starD;
     }
-    await axios
-      .post(`http://localhost:5000/game/snake`, {
-        point: multiply(point),
-        account: account,
-      })
-      .then((res) => {
-        console.log(res.data);
-        alert("점수 등록 완료");
-      });
+
+    const snakeData = await axios.post(`http://15.165.17.43:5000/game/snake`, {
+      point: point * (test() * jest()),
+      account: account,
+    });
+
+    if (snakeData.data.bool === true) {
+      alert(
+        "Score(" +
+          point +
+          ")점" +
+          " x ( " +
+          "Rare(" +
+          test() +
+          ")" +
+          " x " +
+          "Star(" +
+          jest() +
+          ") ) = " +
+          "Result(" +
+          point * (test() * jest()) +
+          ")점" +
+          "\n" +
+          snakeData.data.message
+      );
+      window.location.href = "/game";
+    } else if (snakeData.data.bool === false) {
+      alert(snakeData.data.message);
+    }
   };
 
   //React variables
@@ -203,8 +245,12 @@ const Board = () => {
         {sectionCard && (
           <div id="snake_message">
             <div id="snake_card">
-              <h1 className="snake_card-heading">Score</h1>
-              <h2 className="snake_card-value">{score}</h2>
+              <h3 className="snake_card-heading">Prev Score</h3>
+              <h3 className="snake_card-value">
+                {prevScore === undefined ? "None" : prevScore}
+              </h3>
+              <h3 className="snake_card-heading">Score</h3>
+              <h3 className="snake_card-value">{score}</h3>
               <div onClick={sendPoint}>점수 등록</div>
               <div
                 className="snake_restart button-space"

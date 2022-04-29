@@ -3,21 +3,30 @@ import React, { useEffect, useState } from "react";
 import Carousel from "react-elastic-carousel";
 import { useSelector } from "react-redux";
 import { Col, Row } from "reactstrap";
+import { utils } from "ethers";
 
 import "./accept.css";
-const Accept = () => {
+const Accept = (props) => {
   const [rankingDB, setRankingDB] = useState(null);
   const account = useSelector((state) => state.AppState.account);
+  const networkid = useSelector((state) => state.AppState.networkid);
+  const chainid = useSelector((state) => state.AppState.chainid);
   const TokenContract = useSelector(
     (state) => state.AppState.AmusementArcadeTokenContract
   );
   const TokenClaimContract = useSelector(
     (state) => state.AppState.TokenClaimContract
   );
+  // const [Loading, setLoading] = useState(false);
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
+
   useEffect(async () => {
     if (account !== null) {
       await axios
-        .post(`http://localhost:5000/game/ranking`, { address: account })
+        .post(`http://15.165.17.43:5000/game/ranking`, { address: account })
         .then(async (response) => {
           const data = await response.data;
           setRankingDB(data);
@@ -27,43 +36,52 @@ const Accept = () => {
 
   async function checkApprove(address) {
     const result = await axios
-      .post(`http://localhost:5000/game/getclaim`, { address: address })
+      .post(`http://15.165.17.43:5000/game/getclaim`, { address: address })
       .then((res) => res.data.message);
     return await result;
   }
 
   async function setClaim(address, amount) {
     if (TokenClaimContract !== null) {
+      if (chainid === 1337 ? false : networkid === chainid ? false : true)
+        return alert("네트워크 아이디를 확인하세요");
+      console.log("위");
+      props.setLoading(true);
       await TokenClaimContract.methods
-        .setClaim(address, amount)
+        .setClaim(address, utils.parseEther(amount.toString()))
         .send({ from: account, gas: 3000000 })
         .then(() => {
           axios
-            .post(`http://localhost:5000/game/setclaim`, {
+            .post(`http://15.165.17.43:5000/game/setclaim`, {
               address: address,
               claim: true,
             })
             .then((res) => {
               if (res.data.message === "ok") {
+                //sleep(2000);
                 alert("승인 완료");
+                props.setLoading(false);
               } else {
                 alert("에러확인");
+                //sleep(2000);
+                props.setLoading(false);
               }
             });
         });
     } else {
       alert("컨트랙트 로드 실패");
+      props.setLoading(false);
     }
   }
 
   function changeCost(index) {
     switch (index) {
       case 0:
-        return 1000;
+        return 2000;
       case 1:
-        return 600;
+        return 1000;
       case 2:
-        return 400;
+        return 500;
     }
   }
 
@@ -86,7 +104,25 @@ const Accept = () => {
               onClick={async (e) => {
                 if (rankingDB !== null && ranker[i] !== undefined) {
                   if ((await checkApprove(ranker[i].address)) === false) {
-                    setClaim(ranker[i].address, changeCost(i)).then(() => {
+                    const snakeranker = rankingDB.snakeranker.findIndex(
+                      (data) => data.address === ranker[i].address
+                    );
+                    const tetrisranker = rankingDB.tetrisranker.findIndex(
+                      (data) => data.address === ranker[i].address
+                    );
+                    const puzzleranker = rankingDB.puzzleranker.findIndex(
+                      (data) => data.address === ranker[i].address
+                    );
+                    const mineranker = rankingDB.mineranker.findIndex(
+                      (data) => data.address === ranker[i].address
+                    );
+                    const result =
+                      (snakeranker !== -1 ? changeCost(snakeranker) : 0) +
+                      (tetrisranker !== -1 ? changeCost(tetrisranker) : 0) +
+                      (puzzleranker !== -1 ? changeCost(puzzleranker) : 0) +
+                      (mineranker !== -1 ? changeCost(mineranker) : 0);
+
+                    setClaim(ranker[i].address, result).then(() => {
                       e.target.setAttribute("hidden", "true");
                     });
                   } else {

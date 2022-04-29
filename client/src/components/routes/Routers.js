@@ -17,26 +17,32 @@ import Error from "../ui/templete/Error404";
 import JoinUs from "../ui/register/JoinUs";
 import Admin from "../pages/Admin/Admin";
 import Evolution from "../pages/Evolution/Evolution";
+import Staking from "../pages/Staking/Staking";
+import Error404 from "../ui/templete/Error404";
+import Loading from "../ui/templete/Loading";
 
 const Routers = () => {
   return (
     <Fragment>
       <Routes>
         <Route path="/*" element={<Home />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/market" element={<Market />} />
+        <Route path="/admin/*" element={<Admin />} />
+        <Route path="/market/*" element={<Market />} />
         <Route path="/detailes/:card_id" element={<NftDetails />} />
-        <Route path="/create" element={<Create />} />
+        <Route path="/create/*" element={<Create />} />
         <Route path="/join/*" element={<JoinUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/edit-profile" element={<EditProfile />} />
-        <Route path="/mypage" element={<MyPage />} />
+        <Route path="/mypage/*" element={<MyPage />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/game/*" element={<Game />} />
         <Route path="/ranking" element={<Ranking />} />
-        <Route path="/upgrade" element={<Evolution />} />
+        <Route path="/upgrade/*" element={<Evolution />} />
+        <Route path="/staking" element={<Staking />} />
         <Route path="/test" element={<Test />} />
         <Route path="/error" element={<Error />} />
+        <Route exact path="/error" component={<Error404 />} />
+        <Route path="/loading" element={<Loading />} />
       </Routes>
     </Fragment>
   );

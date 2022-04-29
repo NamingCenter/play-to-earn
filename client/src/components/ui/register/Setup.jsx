@@ -4,20 +4,36 @@ import Card from "react-bootstrap/Card";
 import { Col, Container, Row } from "reactstrap";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import "./setup.css";
+import { css } from "@emotion/react";
+import FadeLoader from "react-spinners/FadeLoader";
 
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import SelectCard from "./SelectCard";
+import { utils } from "ethers";
+import { updateMyLists } from "../../../redux/actions";
 
 const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
 const Setup = () => {
+  const override = css`
+    display: block;
+    margin: 0 auto;
+    border-color: #5900ff;
+    width: 100%;
+    height: 100%;
+    background: #34343465;
+  `;
+  const dispatch = useDispatch();
   const SelectNFT = useSelector((state) => state.NftsReducer);
 
   const account = useSelector((state) => state.AppState.account);
+  const MyNFTlists = useSelector((state) => state.AppState.MyNFTlists);
   const CreateNFTContract = useSelector(
     (state) => state.AppState.CreateNFTContract
   );
+  const networkid = useSelector((state) => state.AppState.networkid);
+  const chainid = useSelector((state) => state.AppState.chainid);
 
   const [form, setForm] = useState({
     name: SelectNFT.name,
@@ -27,77 +43,137 @@ const Setup = () => {
     email: "Enter your E-mail address",
   });
 
-  const addSignUp = async () => {
-    await axios
-      .post("http://localhost:5000/user/register", {
+  const [checkItem, setCheckItem] = useState(null);
+  const [Loading, setLoading] = useState(false);
+
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
+
+  async function addSignUp() {
+    if (chainid === 1337 ? false : networkid === chainid ? false : true)
+      return alert("네트워크 아이디를 확인하세요");
+
+    const emailRegex =
+      /([\w-.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+    if (!emailRegex.test(form.email))
+      return alert("이메일 형식이 틀렸어요. 다시 확인해주세요.");
+
+    const checkuser = await axios
+      .post("http://15.165.17.43:5000/user/checkuser", {
         address: account,
         nick: form.nick,
         email: form.email,
+      })
+      .then((res) => res.data.result);
+    console.log(checkuser);
+    if (checkuser) {
+      let data = JSON.stringify({
+        name: SelectNFT.name,
+        description: SelectNFT.description,
         image: SelectNFT.image,
-      })
-      .then(() => {
-        console.log("success");
       });
-  };
-
-  const [checkItem, setCheckItem] = useState(null);
-
-  async function lastBtn() {
-    let data = JSON.stringify({
-      name: SelectNFT.name,
-      description: SelectNFT.description,
-      image: SelectNFT.image,
-    });
-    const added = await client.add(data);
-    const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-
-    let price = 1000;
-    await CreateNFTContract.methods
-      .CreateNFTinContract(url, price)
-      .send({ from: account, gas: 3000000 }, (error) => {
-        if (!error) {
-          console.log("send ok");
-        } else {
-          console.log(error);
-        }
-      })
-      .then(async (res) => {
-        await axios
-          .post(`http://localhost:5000/nfts`, {
-            tokenId: res.events.NFTItemCreated.returnValues.tokenId,
-            address: account,
-            img: SelectNFT.image,
-            name: SelectNFT.name,
-            description: SelectNFT.description,
-            price: price,
-          })
-          .then((res) => {
-            if (res.data.message === "ok") {
-              alert("NFT발급 성공");
-            } else {
-              alert("이미 발급된 번호입니다.");
-            }
-          });
-      });
+      const added = await client.add(data);
+      const url = `https://ipfs.infura.io/ipfs/${added.path}`;
+      let price = 1000;
+      setLoading(true);
+      await CreateNFTContract.methods
+        .CreateNFTinContract(url, utils.parseEther(price.toString()))
+        .send({ from: account, gas: 3000000 }, (error) => {
+          if (!error) {
+            console.log("send ok");
+          } else {
+            sleep(2000);
+            setLoading(false);
+            console.log(error);
+          }
+        })
+        .then(async (res) => {
+          const tokenId = res.events.NFTItemCreated.returnValues.tokenId;
+          const star = res.events.NFTItemCreated.returnValues.star;
+          const rare = res.events.NFTItemCreated.returnValues.rare;
+          const sell = res.events.NFTItemCreated.returnValues.sell;
+          const price = res.events.NFTItemCreated.returnValues.price;
+          let NFTInfo = {
+            fileUrl: SelectNFT.image,
+            formInput: {
+              tokenid: tokenId,
+              price: utils.formatEther(price),
+              star: star,
+              rare: rare,
+              sell: sell,
+              name: SelectNFT.name,
+              description: SelectNFT.description,
+            },
+          };
+          await axios
+            .post(`http://15.165.17.43:5000/user/register`, {
+              tokenId: tokenId,
+              address: account,
+              name: SelectNFT.name,
+              description: SelectNFT.description,
+              price: utils.formatEther(price),
+              nick: form.nick,
+              email: form.email,
+              image: SelectNFT.image,
+              contractAddress: CreateNFTContract.options.address,
+            })
+            .then(async (res) => {
+              if (res.data.message === "ok") {
+                sleep(2000);
+                setLoading(false);
+                alert(`NFT발급 성공\n반갑습니다. ${form.nick}님`);
+                console.log(NFTInfo);
+                dispatch(updateMyLists({ MyNFTlists: [NFTInfo] }));
+                window.location.href = "/";
+              } else {
+                sleep(2000);
+                setLoading(false);
+                alert("이미 발급된 번호입니다.");
+              }
+            });
+        });
+    } else {
+      sleep(2000);
+      setLoading(false);
+      alert("이미 가입되어있는 이메일 또는 닉네임 입니다.");
+    }
   }
-
   return (
     <Fragment>
+      {Loading ? (
+        <div
+          className={Loading ? "parentDisable" : ""}
+          width="100%"
+          height="100%"
+        >
+          <div className="overlay-box">
+            <FadeLoader
+              size={150}
+              color={"#ffffff"}
+              css={override}
+              loading={Loading}
+              z-index={"1"}
+              text="Loading your content..."
+            />
+          </div>
+        </div>
+      ) : (
+        false
+      )}
       <Container className="setup__container">
         <Row>
-          <Col lg="12" className="mb-3">
+          <Col lg="8" className="mb-3">
             <div className="free__list__top">
               <h3>User Registeration</h3>
-              {/* <h5>Join Us</h5> */}
             </div>
           </Col>
-          <Card
+          <div
             border="light"
             style={{
               width: "30rem",
-              height: "32rem",
-              backgroundColor: "black",
-              marginBottom: "20px",
+              height: "27rem",
             }}
           >
             <Card.Body>
@@ -110,14 +186,13 @@ const Setup = () => {
                 />
               </div>
             </Card.Body>
-          </Card>
+          </div>
           <Col>
-            <Card
+            <div
               border="light"
               style={{
-                width: "40rem",
+                maxwidth: "40rem",
                 height: "22rem",
-                backgroundColor: "black",
                 marginBottom: "20px",
                 display: "flex",
                 flexDirection: "column",
@@ -143,28 +218,16 @@ const Setup = () => {
                   />
                 </div>
                 <br />
-
-                {/* <button
-                  className="show__btn"
-                  onClick={() => addSignUp()}
-                  style={{ width: "120px" }}
+                <button
+                  onClick={async () => {
+                    await addSignUp();
+                  }}
+                  className="welcome__btn"
                 >
-                  signup
-                </button> */}
+                  Let's Get Started
+                </button>
               </Card.Body>
-            </Card>
-            {/*  window.location.href 새로고침을 하지 않으면 에러가 발생 */}
-            <button
-              onClick={async () => {
-                await lastBtn();
-                await addSignUp();
-                // alert("해당 NFT가 발급 되었습니다");
-                window.location.href = "http://localhost:3000/";
-              }}
-              className="welcome__btn"
-            >
-              Let's Get Started
-            </button>
+            </div>
           </Col>
         </Row>
       </Container>

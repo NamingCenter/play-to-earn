@@ -15,10 +15,9 @@ const MyRanking = () => {
   useEffect(() => {
     if (account !== null) {
       axios
-        .post(`http://localhost:5000/game/ranking`, { address: account })
+        .post(`http://15.165.17.43:5000/game/ranking`, { address: account })
         .then((response) => {
           const data = response.data;
-          console.log(data);
           setRankingDB(data);
         });
 

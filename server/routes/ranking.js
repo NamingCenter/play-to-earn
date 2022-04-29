@@ -3,17 +3,25 @@ var router = express.Router();
 const { Ranking, User, Game } = require("../models");
 
 router.post("/", async (req, res, next) => {
-  const { rankingDB, address } = req.body;
-  const reward = [1000, 600, 400];
+  const { rankingDB, address, owner } = req.body;
+  const reward = [2000, 1000, 500];
 
   const findUser = await User.findOne({
-    where: { address: address },
+    where: { address: owner },
     attributes: ["address", "weeks"],
   });
-  const checkApprove = await Game.findAll({ where: { approve: false } });
-  console.log(checkApprove.length);
+
+  const checkApprove = await Game.findAll({
+    where: { address: address },
+    attributes: ["approve"],
+  });
+
+  const result = await checkApprove.filter((data) => {
+    return data.approve === false;
+  });
+
   try {
-    if (checkApprove.length === 0) {
+    if (result.length === 0) {
       await rankingDB.mineranker
         .filter((v, i) => {
           return i < 3;
@@ -28,6 +36,7 @@ router.post("/", async (req, res, next) => {
             balance: reward[index],
           });
         });
+
       await rankingDB.snakeranker
         .filter((v, i) => {
           return i < 3;
@@ -42,6 +51,7 @@ router.post("/", async (req, res, next) => {
             balance: reward[index],
           });
         });
+
       await rankingDB.puzzleranker
         .filter((v, i) => {
           return i < 3;
@@ -56,6 +66,7 @@ router.post("/", async (req, res, next) => {
             balance: reward[index],
           });
         });
+
       await rankingDB.tetrisranker
         .filter((v, i) => {
           return i < 3;
@@ -70,10 +81,11 @@ router.post("/", async (req, res, next) => {
             balance: reward[index],
           });
         });
+
       if (findUser) {
         User.update(
           { weeks: findUser.weeks + 1 },
-          { where: { address: address } }
+          { where: { address: owner } }
         )
           .then(async () => {
             await Game.update(
@@ -92,7 +104,16 @@ router.post("/", async (req, res, next) => {
               where: { claim: false },
               attributes: ["balance"],
             });
-            res.json({ message: "ok", totalclaim: totalclaim });
+            const newDate = new Date().getTime() + 604800000;
+            await User.update(
+              { count: newDate.toString() },
+              { where: { address: owner } }
+            );
+            res.json({
+              message: "ok",
+              totalclaim: totalclaim,
+              count: newDate.toString(),
+            });
           });
       }
     } else {
@@ -106,10 +127,12 @@ router.post("/", async (req, res, next) => {
 
 router.post("/balance", async (req, res) => {
   const { address } = req.body;
+
   const users = await Ranking.findAll({
     where: { address: address },
     attributes: ["address", "balance"],
   });
+
   const balance = [];
 
   for (const user of users) {
@@ -128,11 +151,19 @@ router.post("/previous", async (req, res) => {
 
 router.post("/sendbalance", async (req, res) => {
   const totalclaim = await Ranking.findAll({
-    where: { claim: false },
+    where: { claim: true },
     attributes: ["balance"],
   });
-  console.log(totalclaim);
   res.json({ totalclaim: totalclaim });
+});
+
+router.post("/updateclaim", async (req, res) => {
+  const address = req.body.address;
+  await Ranking.update({ claim: true }, { where: { address: address } }).then(
+    () => {
+      res.json({ message: "ok" });
+    }
+  );
 });
 
 module.exports = router;

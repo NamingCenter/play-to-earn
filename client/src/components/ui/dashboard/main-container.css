@@ -9,6 +9,17 @@
   margin: 1rem 8rem 1rem 4rem;
 }
 
+.overlay-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  background: #14141f;
+  opacity: 0.8;
+  z-index: 1000;
+}
+
 .sub__container {
   margin: 0.5rem 0;
   height: 200%;
@@ -30,7 +41,7 @@
 .section__two {
   display: flex;
   gap: 2rem;
-  height: 350%;
+  height: 380%;
   /* margin-bottom: 500px; */
 }
 
@@ -133,3 +144,25 @@
   border: none;
   border-radius: 100%;
 }
+
+/* .boost__info::before {
+  content: attr(data-text);
+  color: #fcdd56;
+  position: absolute;
+  left: 0;
+  z-index: 2;
+  overflow: hidden;
+  width: 5%;
+  animation: boost 2s ease infinite;
+}
+
+.boost__info::after {
+  content: "";
+  width: 5%;
+  height: 3px;
+  background: #fcdd56;
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  animation: boost 2s ease infinite;
+} */

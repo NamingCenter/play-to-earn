@@ -6,13 +6,20 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import Clock from "./Clock";
 import Carousel from "react-elastic-carousel";
+import { Link } from "react-router-dom";
+import { css } from "@emotion/react";
+import FadeLoader from "react-spinners/FadeLoader";
 
 const Ranking = () => {
+  const override = css`
+    display: block;
+    margin: 0 auto;
+    border-color: #5900ff;
+  `;
   const [loading, setLoading] = useState(true);
   const [toggleState, setToggleState] = useState(1);
   const account = useSelector((state) => state.AppState.account);
-
-  const [defaultTime, setdefaultTime] = useState();
+  const timer = useSelector((state) => state.AppState.timer);
   const [timerDays, setTimerDays] = useState();
   const [timerHours, setTimerHours] = useState();
   const [timerMinutes, setTimerMinutes] = useState();
@@ -21,17 +28,9 @@ const Ranking = () => {
 
   const [isStop, setIsStop] = useState(false);
 
-  useEffect(async () => {
-    const count = await axios
-      .get(`http://localhost:5000/user/time`)
-      .then((res) => res.data);
-    setdefaultTime(parseInt(count.count));
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
     timerid.current = setInterval(async () => {
-      const countdownDate = new Date(defaultTime).getTime();
+      const countdownDate = new Date(timer).getTime();
 
       const now = new Date().getTime();
       const distance = countdownDate - now;
@@ -54,7 +53,7 @@ const Ranking = () => {
       clearInterval(timerid.current);
       setIsStop(true);
     };
-  }, [defaultTime]);
+  }, [timer]);
 
   const toggleTab = (index) => {
     setToggleState(index);
@@ -65,29 +64,38 @@ const Ranking = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (account !== null) {
-      axios
-        .post(`http://localhost:5000/game/ranking`, { address: account })
-        .then((response) => {
-          const data = response.data;
-          setRankingDB(data);
-        })
-        .catch((error) => {
-          setError(error);
-        });
-    }
+    axios
+      .post(`http://15.165.17.43:5000/game/ranking`, { address: account })
+      .then((response) => {
+        const data = response.data;
+        setRankingDB(data);
+      })
+      .catch((error) => {
+        setError(error);
+        window.location.href = "/error";
+      });
     setLoading(false);
   }, [account]);
 
   useEffect(() => {
     axios
-      .post(`http://localhost:5000/game/weekly`)
+      .post(`http://15.165.17.43:5000/game/weekly`)
       .then((response) => {
         const data = response.data;
-        setWeekly(data);
+        const sortData = data.map((v, i) => {
+          const test = v.sort((a, b) => {
+            if (a.games > b.games) return 1;
+            if (a.games < b.games) return -1;
+            if (a.rank < b.rank) return -1;
+            if (a.rank > b.rank) return 1;
+          });
+          return test;
+        });
+        setWeekly(sortData);
       })
       .catch((error) => {
         setError(error);
+        window.location.href = "/error";
       });
     setLoading(false);
   }, [account]);
@@ -118,15 +126,29 @@ const Ranking = () => {
     const temp = [];
     for (let i = 0; i < form.length; i++) {
       const result = [];
-      result.push(<p key={i + "-week"}>{i + 1}주차</p>);
+      result.push(
+        <p key={i + "week"} className="weekly_w">
+          {i + 1}주차
+        </p>
+      );
       for (let k = 0; k < form[i].length; k++) {
         if (form[i][k] === undefined) {
           result.push(<p key={k}> 공석 </p>);
         } else {
           result.push(
-            <p key={k}>
-              {form[i][k].games} / {form[i][k].rank}등 / {form[i][k].nick}
-            </p>
+            <Row
+              key={k}
+              className="weekly"
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                width: "120%",
+              }}
+            >
+              <Col style={{ width: "40%" }}>{form[i][k].games}</Col>
+              <Col style={{ width: "40%" }}>{form[i][k].rank}등 :</Col>
+              <Col style={{ width: "40%" }}>{form[i][k].nick}</Col>
+            </Row>
           );
         }
       }
@@ -139,7 +161,12 @@ const Ranking = () => {
     <>
       <CommonSection title="Ranking" />
       {loading ? (
-        <strong> loading... </strong>
+        <FadeLoader
+          size={150}
+          color={"#4512bc"}
+          css={override}
+          loading={loading}
+        />
       ) : (
         <div className="Ranking__container">
           <Row>
@@ -155,7 +182,7 @@ const Ranking = () => {
                   className={toggleState === 2 ? "tabs active-tabs" : "tabs"}
                   onClick={() => toggleTab(2)}
                 >
-                  form Ranking
+                  Weekly Ranking
                 </button>
                 <button
                   className={toggleState === 3 ? "tabs active-tabs" : "tabs"}
@@ -212,7 +239,7 @@ const Ranking = () => {
                   <h2>Weekly Ranking</h2>
                   <hr />
                   <Container className="my__rank">
-                    <div className="ranking__box">
+                    <div className="sticky__box">
                       <Carousel>
                         {weekly !== null ? weeklyRanking(weekly) : false}
                       </Carousel>
@@ -273,7 +300,7 @@ const Ranking = () => {
                 </div>
               </div>
             </Col>
-            <Col className="time__limit" lg="4" md="3" sm="3">
+            <Col className="time__limit" lg="4" md="6" sm="6">
               <h4>Time Limit</h4>
               <Clock
                 className="clock__box"
@@ -282,6 +309,10 @@ const Ranking = () => {
                 timerMinutes={timerMinutes}
                 timerSeconds={timerSeconds}
               />
+              <button className="aat__token" href="/mypage">
+                <Link to={`/mypage`}>Check your AAT Balance</Link>
+              </button>
+              <br />
             </Col>
           </Row>
         </div>

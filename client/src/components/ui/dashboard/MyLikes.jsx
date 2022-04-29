@@ -11,13 +11,11 @@ const MyLikes = () => {
 
   const getLike = async () => {
     await axios
-      .post(`http://localhost:5000/nfts/likes`, {
+      .post(`http://15.165.17.43:5000/nfts/likes`, {
         account: account,
       })
       .then((res) => {
         setLiked(res.data.like);
-        console.log(res.data.like);
-        // alert("liked data 불러오기OK");
       });
   };
 

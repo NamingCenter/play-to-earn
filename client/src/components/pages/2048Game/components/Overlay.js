@@ -18,12 +18,18 @@ export const Overlay = ({ handleReset, score }) => {
     setLoading(false);
   }, [CreateNFTContract]);
 
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
+
   // 내 nft 리스트
   async function mynftlists() {
     const lists = await CreateNFTContract.methods
       .MyNFTlists()
       .call({ from: account }, (error) => {
         if (!error) {
+          //sleep(2000);
           console.log("send ok");
         } else {
           console.log(error);
@@ -34,7 +40,8 @@ export const Overlay = ({ handleReset, score }) => {
 
   const sendPoint = async () => {
     const point = score;
-    function multiply(point) {
+
+    function test() {
       let rareD;
       if (myList.filter((v) => v.rare === "5").length >= 3) {
         rareD = 3;
@@ -47,6 +54,10 @@ export const Overlay = ({ handleReset, score }) => {
       } else {
         rareD = 1;
       }
+      return rareD;
+    }
+
+    function jest() {
       let starD;
       if (myList.filter((v) => v.star === "5").length >= 3) {
         starD = 3;
@@ -61,17 +72,37 @@ export const Overlay = ({ handleReset, score }) => {
       } else {
         starD = 1;
       }
-      return point * (starD * rareD);
+      return starD;
     }
 
-    await axios
-      .post(`http://localhost:5000/game/2048`, {
-        score: multiply(point),
-        account: account,
-      })
-      .then((res) => {
-        alert("점수 등록 완료");
-      });
+    const puzzleData = await axios.post(`http://15.165.17.43:5000/game/2048`, {
+      score: point * (test() * jest()),
+      account: account,
+    });
+
+    if (puzzleData.data.bool === true) {
+      alert(
+        "Score(" +
+          point +
+          ")점" +
+          " x ( " +
+          "Rare(" +
+          test() +
+          ")" +
+          " x " +
+          "Star(" +
+          jest() +
+          ") ) = " +
+          "Result(" +
+          point * (test() * jest()) +
+          ")점" +
+          "\n" +
+          puzzleData.data.message
+      );
+      window.location.href = "/game";
+    } else if (puzzleData.data.bool === false) {
+      alert(puzzleData.data.message);
+    }
   };
 
   if (Loading) {

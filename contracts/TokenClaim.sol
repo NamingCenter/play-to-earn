@@ -56,14 +56,6 @@ ArcadeToken.approve(user,amount);
       claim[address(this)][msg.sender] = 0;
   }
 
-function ChangOption(uint _tokenId ) payable public checkNFT{
-    uint cost = 1000;
-    require(ArcadeToken.balanceOf(msg.sender)>1000,"amount exceeds balance");
-ArcadeToken.transferFrom(msg.sender,address(this),cost);
-    NFT.changeOption(_tokenId,msg.sender);
-}
-
-
 function mybalance()public view returns(uint){
     return ArcadeToken.balanceOf(msg.sender);
 }

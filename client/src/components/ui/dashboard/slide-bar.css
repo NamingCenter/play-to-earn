@@ -10,6 +10,17 @@
   margin-top: 24px;
 }
 
+.overlay-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  background: #14141f;
+  opacity: 0.8;
+  z-index: 999999999999 !important;
+}
+
 .pfpside__box {
   display: flex;
   /* justify-content: center; */
@@ -19,11 +30,12 @@
 }
 
 .profile__pic {
-  width: 200px;
+  width: 150px;
   height: 132px;
   margin-bottom: 10px;
-  margin-left: 40%;
+  margin-left: 20%;
   position: relative;
+  z-index: 0;
 }
 
 .pfp__iamge {
@@ -35,7 +47,7 @@
   display: flex;
   object-fit: contain;
   position: absolute;
-  z-index: 3333;
+  z-index: 2;
   cursor: pointer;
   border: 5px solid #5242fc;
 }
@@ -47,24 +59,35 @@
   position: absolute;
   /* margin-top: -7.9%; */
   background-color: #5242fcee;
-  z-index: 444;
+  z-index: 0;
   color: #ffffff;
   position: absolute;
   cursor: pointer;
 }
 
 .pfp__iamge:hover {
-  z-index: 222;
+  z-index: 0;
   background-color: #5242fc8c transparent;
   transition: background-color 1s ease-in-out;
 }
 
 .select__label {
-  width: 120px;
+  width: 100px;
   height: 150px;
   padding: 40px 10px;
   border-radius: 50%;
   position: relative;
+}
+
+.select__label i {
+  text-align: center;
+  align-items: center;
+}
+
+.select__label span {
+  /* margin-right: 50px; */
+  text-align: center;
+  align-items: center;
 }
 
 .profile__name {
@@ -76,12 +99,14 @@
 }
 
 .myBest__ranking {
-  margin: 2.2rem 0 0 0;
+  margin: 2rem 0 0 0;
 }
 
 .my__Badge {
-  width: 140px;
+  width: 200px;
   height: 40px;
+  margin-left: 15%;
+  margin-top: -20px;
 }
 
 .my__Badge p {
@@ -102,9 +127,17 @@
   color: white;
   justify-content: center;
   align-items: center;
-  margin-top: 15px;
-  margin-left: 4%;
+  margin-top: 20px;
+  margin-left: 15%;
   box-shadow: 0 0 4px 4px rgba(255, 255, 255, 0.445);
+}
+
+.boost__info {
+  font-size: 1rem;
+  color: #fff;
+  position: relative;
+  margin-top: 10px;
+  font-size: 1rem;
 }
 
 .get__token:hover {
@@ -171,12 +204,18 @@
   height: 24%;
   margin-top: 10%;
   margin-left: 10%;
+  text-decoration: none;
 }
 
 .nav__itemBox span i {
   display: flex;
   color: white;
   cursor: pointer;
+  text-decoration: none;
+}
+
+.edit__icon a {
+  text-decoration: none;
 }
 
 .nav__itemBox h5 {
@@ -296,8 +335,12 @@
     position: absolute;
     margin-top: -8.4%;
     background-color: #5242fc8c;
-    z-index: 444;
+    z-index: 1;
     color: #ffffff;
+  }
+
+  .pfp__iamge {
+    margin-top: -18px !important;
   }
 }
 
@@ -309,8 +352,12 @@
     position: absolute;
     margin-top: -11.6%;
     background-color: #5242fc8c;
-    z-index: 444;
+    z-index: 1;
     color: #ffffff;
+  }
+
+  .pfp__iamge {
+    margin-top: -18px !important;
   }
 }
 
@@ -322,7 +369,7 @@
     position: absolute;
     margin-top: -15.6%;
     background-color: #5242fc8c;
-    z-index: 444;
+    z-index: 1;
     color: #ffffff;
   }
 }
@@ -335,7 +382,7 @@
     position: absolute;
     margin-top: -27.6%;
     background-color: #5242fc8c;
-    z-index: 444;
+    z-index: 1;
     color: #ffffff;
   }
 }
