@@ -64,24 +64,22 @@ const Ranking = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (account !== null) {
-      axios
-        .post(`http://15.165.17.43:5000/game/ranking`, { address: account })
-        .then((response) => {
-          const data = response.data;
-          setRankingDB(data);
-        })
-        .catch((error) => {
-          setError(error);
-          window.location.href = "/error";
-        });
-    }
+    axios
+      .post(`http://localhost:5000/game/ranking`, { address: account })
+      .then((response) => {
+        const data = response.data;
+        setRankingDB(data);
+      })
+      .catch((error) => {
+        setError(error);
+        window.location.href = "/error";
+      });
     setLoading(false);
   }, [account]);
 
   useEffect(() => {
     axios
-      .post(`http://15.165.17.43:5000/game/weekly`)
+      .post(`http://localhost:5000/game/weekly`)
       .then((response) => {
         const data = response.data;
         const sortData = data.map((v, i) => {
