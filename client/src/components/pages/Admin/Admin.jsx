@@ -106,6 +106,7 @@ const Admin = () => {
     const sendRank = async () => {
         if (chainid === 1337 ? false : networkid === chainid ? false : true) return alert("네트워크 아이디를 확인하세요");
         const temparry = await returnarry();
+        console.log(temparry);
         await axios
             .post(`http://15.165.17.43:5000/ranking`, {
                 rankingDB: rankingDB,
@@ -127,7 +128,8 @@ const Admin = () => {
                     await AmusementArcadeTokenContract.methods
                         .transfer(claimAddress, utils.parseEther(sendamount.toString()))
                         .send({ from: account, gas: 3000000 })
-                        .then(() => {
+                        .then((res) => {
+                            console.log(res);
                             dispatch(setTimer({ timer: parseInt(timer) }));
                             alert("DB 전송 완료");
                             setLoading(false);
