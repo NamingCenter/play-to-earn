@@ -284,17 +284,22 @@ const Header = () => {
         };
     }, []);
 
-    useEffect(async () => {
+    useEffect(() => {
         if (Owner === account) {
-            const Mybalance = await TokenClaimContract.methods.mybalance().call({ from: account });
-            dispatch(updateMyBalance({ Mybalance: utils.formatUnits(await Mybalance, 18) }));
             setIsOwner(true);
         } else {
-            const Mybalance = await TokenClaimContract.methods.mybalance().call({ from: account });
-            dispatch(updateMyBalance({ Mybalance: utils.formatUnits(await Mybalance, 18) }));
             setIsOwner(false);
         }
     }, [account, Owner]);
+
+    useEffect(async () => {
+        if (TokenClaimContract !== null) {
+            console.log(account);
+            const Mybalance = await TokenClaimContract.methods.mybalance().call({ from: account });
+            console.log(Mybalance);
+            dispatch(updateMyBalance({ Mybalance: utils.formatUnits(await Mybalance, 18) }));
+        }
+    }, [TokenClaimContract]);
 
     async function MyList(account) {
         if (CreateNFTContract !== null && CreateNFTContract !== "dismatch") {

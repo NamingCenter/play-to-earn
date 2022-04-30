@@ -133,7 +133,7 @@ const Admin = () => {
                             dispatch(setTimer({ timer: parseInt(timer) }));
                             alert("DB 전송 완료");
                             setLoading(false);
-                            window.location.reload();
+                            // window.location.reload();
                         });
                 } else {
                     setLoading(false);
