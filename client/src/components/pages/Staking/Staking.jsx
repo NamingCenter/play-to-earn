@@ -196,7 +196,7 @@ const Staking = () => {
                                 ) : (
                                     <>
                                         <Text textAnchor="middle" fill="#fff" fontSize={40} dy={-20}>
-                                            {checkMyBalance}
+                                            {parseInt(checkMyBalance).toFixed(4)}
                                         </Text>
 
                                         <Text textAnchor="middle" fill="#aaa" fontSize={20} dy={20}>
@@ -300,7 +300,7 @@ const Staking = () => {
                         <hr />
                         <ul>
                             <li>
-                                <span>Available AAT balance to stake : {Mybalance}</span>
+                                <span>Available AAT balance to stake : {parseInt(Mybalance).toFixed(4)}</span>
                                 <br />
                                 <input
                                     type="number"
