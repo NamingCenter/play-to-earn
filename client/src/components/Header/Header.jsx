@@ -133,8 +133,6 @@ const Header = () => {
         }
     }
 
-
-
     const connectWallet = async () => {
         try {
             const provider = await web3Modal.connect();
@@ -286,17 +284,16 @@ const Header = () => {
         };
     }, []);
 
-    useEffect(() => {
-       if (Owner === account) {
+    useEffect(async () => {
+        if (Owner === account) {
             const Mybalance = await TokenClaimContract.methods.mybalance().call({ from: account });
-            dispatch(updateMyBalance({Mybalance:utils.formatUnits(await Mybalance, 18)}))
+            dispatch(updateMyBalance({ Mybalance: utils.formatUnits(await Mybalance, 18) }));
             setIsOwner(true);
         } else {
             const Mybalance = await TokenClaimContract.methods.mybalance().call({ from: account });
-            dispatch(updateMyBalance({Mybalance:utils.formatUnits(await Mybalance, 18)}))
+            dispatch(updateMyBalance({ Mybalance: utils.formatUnits(await Mybalance, 18) }));
             setIsOwner(false);
         }
-
     }, [account, Owner]);
 
     async function MyList(account) {
