@@ -105,6 +105,7 @@ const Admin = () => {
 
     const sendRank = async () => {
         if (chainid === 1337 ? false : networkid === chainid ? false : true) return alert("네트워크 아이디를 확인하세요");
+        setLoading(true);
         const temparry = await returnarry();
         console.log(temparry);
         await axios
@@ -124,7 +125,6 @@ const Admin = () => {
                     const sendamount = parseFloat(result) - parseFloat(utils.formatEther(contractbalance));
                     const claimAddress = await TokenClaimContract.options.address;
 
-                    setLoading(true);
                     await AmusementArcadeTokenContract.methods
                         .transfer(claimAddress, utils.parseEther(sendamount.toString()))
                         .send({ from: account, gas: 3000000 })

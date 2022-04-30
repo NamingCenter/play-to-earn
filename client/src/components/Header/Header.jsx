@@ -11,7 +11,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 
-import { updateAccounts, changeChainid, getWeb3 } from "../../redux/actions/index";
+import { updateAccounts, changeChainid, getWeb3, updateMyBalance } from "../../redux/actions/index";
 import axios from "axios";
 import { utils } from "ethers";
 
@@ -122,6 +122,18 @@ const Header = () => {
         const wakeUpTime = Date.now() + ms;
         while (Date.now() < wakeUpTime) {}
     }
+
+    async function checkMyBalance(account) {
+        if (TokenClaimContract !== null && TokenClaimContract !== "dismatch") {
+            const Mybalance = await TokenClaimContract.methods.mybalance().call({ from: account });
+            //sleep(2000);
+            return utils.formatEther(await Mybalance);
+        } else {
+            return 0;
+        }
+    }
+
+
 
     const connectWallet = async () => {
         try {
@@ -275,11 +287,16 @@ const Header = () => {
     }, []);
 
     useEffect(() => {
-        if (Owner === account) {
+       if (Owner === account) {
+            const Mybalance = await TokenClaimContract.methods.mybalance().call({ from: account });
+            dispatch(updateMyBalance({Mybalance:utils.formatUnits(await Mybalance, 18)}))
             setIsOwner(true);
         } else {
+            const Mybalance = await TokenClaimContract.methods.mybalance().call({ from: account });
+            dispatch(updateMyBalance({Mybalance:utils.formatUnits(await Mybalance, 18)}))
             setIsOwner(false);
         }
+
     }, [account, Owner]);
 
     async function MyList(account) {
@@ -315,16 +332,6 @@ const Header = () => {
             connectWallet();
         }
     }, [Owner]);
-
-    async function checkMyBalance(account) {
-        if (TokenClaimContract !== null && TokenClaimContract !== "dismatch") {
-            const Mybalance = await TokenClaimContract.methods.mybalance().call({ from: account });
-            //sleep(2000);
-            return utils.formatEther(await Mybalance);
-        } else {
-            return 0;
-        }
-    }
 
     const toggleMenu = () => menuRef.current.classList.toggle("active__menu");
 
