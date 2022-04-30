@@ -28,7 +28,7 @@ function SnakeGame({ setShowModal }) {
           <i className="ri-close-line" onClick={() => setShowModal(false)}></i>
         </span>
         <div id="snake_board_container" className="snake_game">
-          <Board />
+          <Board setShowModal={setShowModal} />
         </div>
       </div>
     </div>

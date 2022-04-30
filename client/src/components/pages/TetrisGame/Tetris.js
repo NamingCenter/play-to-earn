@@ -20,7 +20,7 @@ import { useSelector } from "react-redux";
 
 let sirtet;
 
-const Tetris = ({ setShowModal }) => {
+const Tetris = (props, { setShowModal }) => {
   const [customization, setCustomization] = useState({
     colors: 0,
     style: 0,
@@ -83,7 +83,7 @@ const Tetris = ({ setShowModal }) => {
 
   useEffect(async () => {
     const tetrisData = await axios.post(
-      `http://15.165.17.43:5000/game/tetrisScore`,
+      `http://localhost:5000/game/tetrisScore`,
       { account: account }
     );
     if (tetrisData.data !== null) {
@@ -308,13 +308,10 @@ const Tetris = ({ setShowModal }) => {
         return starD;
       }
 
-      const tetrisData = await axios.post(
-        `http://15.165.17.43:5000/game/tetris`,
-        {
-          data: data * (test() * jest()),
-          account: account,
-        }
-      );
+      const tetrisData = await axios.post(`http://localhost:5000/game/tetris`, {
+        data: data * (test() * jest()),
+        account: account,
+      });
 
       if (tetrisData.data.bool === true) {
         alert(
@@ -335,7 +332,9 @@ const Tetris = ({ setShowModal }) => {
             "\n" +
             tetrisData.data.message
         );
-        window.location.href = "/game";
+        // window.location.href = "/game";
+        // startGameHandler();
+        props.setShowModal(false);
       } else if (tetrisData.data.bool === false) {
         alert(tetrisData.data.message);
       }

@@ -11,7 +11,7 @@ var food = [2, 2];
 var adder = [0, 1];
 var count = 0;
 
-const Board = () => {
+const Board = (props, setShowModal) => {
   const account = useSelector((state) => state.AppState.account);
   const CreateNFTContract = useSelector(
     (state) => state.AppState.CreateNFTContract
@@ -27,7 +27,7 @@ const Board = () => {
 
   useEffect(async () => {
     const snakeData = await axios.post(
-      `http://15.165.17.43:5000/game/snakeScore`,
+      `http://localhost:5000/game/snakeScore`,
       { account: account }
     );
     if (snakeData.data !== null) {
@@ -37,10 +37,12 @@ const Board = () => {
     }
     setLoading(false);
   }, [account]);
+
   function sleep(ms) {
     const wakeUpTime = Date.now() + ms;
     while (Date.now() < wakeUpTime) {}
   }
+
   // 내 nft 리스트
   async function mynftlists() {
     const lists = await CreateNFTContract.methods
@@ -92,7 +94,7 @@ const Board = () => {
       return starD;
     }
 
-    const snakeData = await axios.post(`http://15.165.17.43:5000/game/snake`, {
+    const snakeData = await axios.post(`http://localhost:5000/game/snake`, {
       point: point * (test() * jest()),
       account: account,
     });
@@ -116,7 +118,10 @@ const Board = () => {
           "\n" +
           snakeData.data.message
       );
-      window.location.href = "/game";
+      // window.location.href = "/game";
+      count = 0;
+      setScore(0);
+      props.setShowModal(false);
     } else if (snakeData.data.bool === false) {
       alert(snakeData.data.message);
     }
