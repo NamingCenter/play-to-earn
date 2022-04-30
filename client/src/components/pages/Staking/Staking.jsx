@@ -404,7 +404,7 @@ const Staking = () => {
                                       ).toString(),
                                     })
                                   );
-                                  //sleep(2000);
+                                  // sleep(2000);
                                   setLoading(false);
                                   alert("AAT Staking Success!");
                                   console.log(res.data.message);
@@ -478,7 +478,7 @@ const Staking = () => {
                                   ).toString(),
                                 })
                               );
-                              //sleep(2000);
+                              // sleep(2000);
                               setLoading(false);
                               alert("AAT Unstaking Success!");
                               console.log(res.data.message);
@@ -508,7 +508,7 @@ const Staking = () => {
                         .send({ from: account, gas: 3000000 })
                         .then((res) => {
                           console.log(res);
-                          //sleep(2000);
+                          // sleep(2000);
                           setLoading(false);
                           alert("Calim Rewards Success!");
                         })

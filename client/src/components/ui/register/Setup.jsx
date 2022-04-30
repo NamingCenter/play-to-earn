@@ -84,7 +84,7 @@ const Setup = () => {
           if (!error) {
             console.log("send ok");
           } else {
-            sleep(2000);
+            // sleep(2000);
             setLoading(false);
             console.log(error);
           }
@@ -121,21 +121,21 @@ const Setup = () => {
             })
             .then(async (res) => {
               if (res.data.message === "ok") {
-                sleep(2000);
+                // sleep(2000);
                 setLoading(false);
                 alert(`NFT발급 성공\n반갑습니다. ${form.nick}님`);
                 console.log(NFTInfo);
                 dispatch(updateMyLists({ MyNFTlists: [NFTInfo] }));
                 window.location.href = "/";
               } else {
-                sleep(2000);
+                // sleep(2000);
                 setLoading(false);
                 alert("이미 발급된 번호입니다.");
               }
             });
         });
     } else {
-      sleep(2000);
+      // sleep(2000);
       setLoading(false);
       alert("이미 가입되어있는 이메일 또는 닉네임 입니다.");
     }

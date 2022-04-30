@@ -136,7 +136,7 @@ const SideBar = () => {
                 dispatch(
                   updateMyBalance({ Mybalance: await checkMyBalance(account) })
                 );
-                //sleep(2000);
+                // sleep(2000);
                 alert("Get Token 완료");
                 setLoading(false);
                 // setAATclaim("정보수신중..");

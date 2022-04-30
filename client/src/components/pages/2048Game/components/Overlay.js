@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import ReactLoaing from "react-loading";
 
-export const Overlay = ({ handleReset, score }) => {
+export const Overlay = ({ props, handleReset, score }) => {
   const account = useSelector((state) => state.AppState.account);
   const CreateNFTContract = useSelector(
     (state) => state.AppState.CreateNFTContract
@@ -29,7 +29,7 @@ export const Overlay = ({ handleReset, score }) => {
       .MyNFTlists()
       .call({ from: account }, (error) => {
         if (!error) {
-          //sleep(2000);
+          // sleep(2000);
           console.log("send ok");
         } else {
           console.log(error);
@@ -99,7 +99,8 @@ export const Overlay = ({ handleReset, score }) => {
           "\n" +
           puzzleData.data.message
       );
-      window.location.href = "/game";
+      // window.location.href = "/game";
+      props.setShowModal(false);
     } else if (puzzleData.data.bool === false) {
       alert(puzzleData.data.message);
     }

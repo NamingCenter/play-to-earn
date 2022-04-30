@@ -9,6 +9,7 @@ EC2 IP
 15.165.17.43
 
 REACT_APP_RPC_URL=https://data-seed-prebsc-1-s1.binance.org:8545
+REACT_RPC_URL=http://localhost:7545
 
 package.json
 

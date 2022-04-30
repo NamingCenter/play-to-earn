@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
 import "./header.css";
-import { useCookies } from "react-cookie";
 import logoPng from "../../assets/images/logoPng.png";
 import { ethers } from "ethers";
 import { Container } from "reactstrap";
@@ -298,7 +297,7 @@ const Header = () => {
       const MyNFTlists = await CreateNFTContract.methods
         .MyNFTlists()
         .call({ from: account });
-      //sleep(2000);
+      // sleep(2000);
       const listsForm = await Promise.all(
         MyNFTlists.map(async (i) => {
           const tokenURI = await CreateNFTContract.methods

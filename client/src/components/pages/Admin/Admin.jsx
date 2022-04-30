@@ -86,7 +86,7 @@ const Admin = () => {
                 .transfer(stakingAddress, utils.formatUnits(sendrewards, "wei"))
                 .send({ from: account, gas: 3000000 })
                 .then((res) => {
-                  sleep(2000);
+                  // sleep(2000);
                   setLoading(false);
                   console.log(res);
                   console.log("전송완료");

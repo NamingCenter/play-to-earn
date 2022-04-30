@@ -173,7 +173,7 @@ const EvoDetails = (props) => {
                         if (!error) {
                           console.log("send ok");
                         } else {
-                          //sleep(2000);
+                          // sleep(2000);
                           props.setLoading(false);
                           console.log(error);
                         }
@@ -190,7 +190,7 @@ const EvoDetails = (props) => {
                           star: star,
                         })
                         .then((res) => {
-                          //sleep(2000);
+                          // sleep(2000);
                           MyNFTlists[props.data.NFTIndex].formInput.rare = rare;
                           MyNFTlists[props.data.NFTIndex].formInput.star = star;
                           dispatch(

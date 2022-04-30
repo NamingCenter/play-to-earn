@@ -87,7 +87,7 @@ const Modal = (props) => {
                 if (!error) {
                   console.log("send ok");
                 } else {
-                  //sleep(2000);
+                  // sleep(2000);
                   props.setLoading(false);
                   console.log(error);
                 }
@@ -126,10 +126,10 @@ const Modal = (props) => {
                         ],
                       })
                     );
-                    //sleep(2000);
+                    // sleep(2000);
                     props.setLoading(false);
                   } else {
-                    //sleep(2000);
+                    // sleep(2000);
                     props.setLoading(false);
                     console.log(res.data.message);
                   }
@@ -137,7 +137,7 @@ const Modal = (props) => {
             });
         })
         .catch(() => {
-          //sleep(2000);
+          // sleep(2000);
           props.setLoading(false);
         });
     }

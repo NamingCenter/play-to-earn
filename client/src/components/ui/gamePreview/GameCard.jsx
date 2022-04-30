@@ -42,7 +42,7 @@ const GameCard = (props) => {
           .balanceOf(account)
           .call();
         if (mybalance !== 0) {
-          //sleep(2000);
+          //// sleep(2000);
           setLoading(false);
           setShowModal(true);
         } else {
