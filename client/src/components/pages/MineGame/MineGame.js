@@ -9,8 +9,10 @@ import "./MineGame.css";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import ReactLoaing from "react-loading";
+import { useNavigate } from "react-router-dom";
 
 function MineGame({ setShowModal }) {
+    const Navi = useNavigate();
     let [gameAttr, setGameAttr] = useState({
         width: MIN_WIDTH,
         height: MIN_HEIGHT,
@@ -94,7 +96,9 @@ function MineGame({ setShowModal }) {
             .then((res) => {
                 if (res.data.bool === true) {
                     alert("Score(" + point + ")점" + " x ( " + "Rare(" + test() + ")" + " x " + "Star(" + jest() + ") ) = " + "Result(" + point * (test() * jest()) + ")점" + "\n" + res.data.message);
-                    window.location.href = "/game";
+                    // window.location.href = "/game";
+                    // Navi("/game");
+                    setShowModal(false);
                 } else if (res.data.bool === false) {
                     alert(res.data.message);
                 }

@@ -11,10 +11,12 @@ import Settings from "./Settings";
 import "./styles/Tetris.css";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 let sirtet;
 
 const Tetris = ({ setShowModal }) => {
+    const Navi = useNavigate();
     const [customization, setCustomization] = useState({
         colors: 0,
         style: 0,
@@ -278,7 +280,7 @@ const Tetris = ({ setShowModal }) => {
                 .then((res) => {
                     if (res.data.bool === true) {
                         alert("Score(" + data + ")점" + " x ( " + "Rare(" + test() + ")" + " x " + "Star(" + jest() + ") ) = " + "Result(" + data * (test() * jest()) + ")점" + "\n" + res.data.message);
-                        window.location.href = "/game";
+                        setShowModal(false);
                     } else if (res.data.bool === false) {
                         alert(res.data.message);
                     }

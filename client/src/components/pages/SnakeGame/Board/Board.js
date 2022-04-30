@@ -3,6 +3,7 @@ import ReactLoaing from "react-loading";
 import "./Board.css";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const boardSize = [15, 15];
 const refreshTime = 175;
@@ -11,12 +12,13 @@ var food = [2, 2];
 var adder = [0, 1];
 var count = 0;
 
-const Board = () => {
+const Board = (props) => {
     const account = useSelector((state) => state.AppState.account);
     const CreateNFTContract = useSelector((state) => state.AppState.CreateNFTContract);
     const [Loading, setLoading] = useState(true);
     const [myList, setMyList] = useState([]);
     const [prevScore, setPrevScore] = useState();
+    const Navi = useNavigate();
 
     useEffect(() => {
         mynftlists();
@@ -93,7 +95,7 @@ const Board = () => {
             .then((res) => {
                 if (res.data.bool === true) {
                     alert("Score(" + point + ")점" + " x ( " + "Rare(" + test() + ")" + " x " + "Star(" + jest() + ") ) = " + "Result(" + point * (test() * jest()) + ")점" + "\n" + res.data.message);
-                    window.location.href = "/game";
+                    props.setShowModal(false);
                 } else {
                     alert(res.data.message);
                 }
