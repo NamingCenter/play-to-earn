@@ -49,6 +49,7 @@ const Staking = () => {
     const [stake, setStake] = useState("");
     const [unstake, setUnstake] = useState("");
     const [isStop, setIsStop] = useState(false);
+    const [Stop, setStop] = useState(false);
     const [reward, setReward] = useState(0);
     const [unclaimreward, setUnclaimreward] = useState(0);
     const [stakingAmount, setStakingAmount] = useState(0);
@@ -60,7 +61,7 @@ const Staking = () => {
 
     useEffect(() => {
         if (Mybalance !== null) {
-            setCheckMyBalance(Mybalance);
+            setCheckMyBalance(Number(Mybalance).toFixed(4));
         }
     }, [Mybalance]);
 
@@ -102,17 +103,29 @@ const Staking = () => {
         });
     }, [checkMyBalance]);
 
+    function stopinterval(bool) {
+        if (bool) {
+            clearInterval(check.current);
+        }
+    }
     useEffect(async () => {
         if (StakingTokenContract !== null && account !== null && stakerId !== 0) {
-            setLoading(true);
             check.current = setInterval(async () => {
-                const result = await StakingTokenContract.methods.userStakeInfo(account).call({ from: account });
-                setReward(utils.formatEther(result._availableRewards));
-                setUnclaimreward(utils.formatEther(result._unclaimedRewards));
-                setLoading(false);
+                const result = await StakingTokenContract.methods
+                    .userStakeInfo(account)
+                    .call({ from: account })
+                    .then((res) => {
+                        setReward(utils.formatEther(res._availableRewards));
+                        setUnclaimreward(utils.formatEther(res._unclaimedRewards));
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        stopinterval(true);
+                    });
             }, 5000);
             return () => {
                 clearInterval(check.current);
+                stopinterval(true);
             };
         }
     }, [StakingTokenContract, stakerId]);
@@ -196,7 +209,7 @@ const Staking = () => {
                                 ) : (
                                     <>
                                         <Text textAnchor="middle" fill="#fff" fontSize={40} dy={-20}>
-                                            {parseInt(checkMyBalance).toFixed(4)}
+                                            {checkMyBalance}
                                         </Text>
 
                                         <Text textAnchor="middle" fill="#aaa" fontSize={20} dy={20}>
@@ -300,7 +313,7 @@ const Staking = () => {
                         <hr />
                         <ul>
                             <li>
-                                <span>Available AAT balance to stake : {parseInt(Mybalance).toFixed(4)}</span>
+                                <span>Available AAT balance to stake : {checkMyBalance}</span>
                                 <br />
                                 <input
                                     type="number"
@@ -339,10 +352,11 @@ const Staking = () => {
                                                                     setStakingAmount(amount);
                                                                     dispatch(
                                                                         updateMyBalance({
-                                                                            Mybalance: (parseInt(Mybalance) - stake).toString(),
+                                                                            Mybalance: (Number(Mybalance) - Number(stake)).toString(),
                                                                         })
                                                                     );
                                                                     //sleep(2000);
+                                                                    setStakerId(parseInt(stakerId));
                                                                     setLoading(false);
                                                                     setStake("");
                                                                     alert("AAT Staking Success!");
@@ -399,7 +413,7 @@ const Staking = () => {
                                                             setStakingAmount(amount);
                                                             dispatch(
                                                                 updateMyBalance({
-                                                                    Mybalance: (parseInt(Mybalance) + parseInt(unstake)).toString(),
+                                                                    Mybalance: (Number(Mybalance) + Number(unclaimreward)).toString(),
                                                                 })
                                                             );
                                                             //sleep(2000);
@@ -428,6 +442,16 @@ const Staking = () => {
                                     onClick={async () => {
                                         if (StakingTokenContract !== null) {
                                             setLoading(true);
+                                            if (stakingAmount == 0) {
+                                                console.log("스탑하러감");
+                                                clearInterval(check.current);
+                                                setStop(true);
+                                                dispatch(
+                                                    updateMyBalance({
+                                                        Mybalance: (Number(Mybalance) + Number(unclaimreward)).toString(),
+                                                    })
+                                                );
+                                            }
                                             await StakingTokenContract.methods
                                                 .claimRewards()
                                                 .send({ from: account, gas: 3000000 })
@@ -447,21 +471,16 @@ const Staking = () => {
                                     Claim rewards
                                 </button>
                             </li>
-                            {/* <li>
-                <button
-                  onClick={async () => {
-                    if (StakingTokenContract !== null) {
-                      console.log(
-                        await AmusementArcadeTokenContract.methods
-                          .balanceOf(StakingTokenContract._address)
-                          .call()
-                      );
-                    }
-                  }}
-                >
-                  TESTBUTTON
-                </button>
-              </li> */}
+                            <li>
+                                <button
+                                    onClick={async () => {
+                                        clearInterval(check.current);
+                                        setStop(true);
+                                    }}
+                                >
+                                    TESTBUTTON
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 </Col>
