@@ -471,7 +471,7 @@ const Staking = () => {
                                     Claim rewards
                                 </button>
                             </li>
-                            <li>
+                            {/* <li>
                                 <button
                                     onClick={async () => {
                                         clearInterval(check.current);
@@ -480,7 +480,7 @@ const Staking = () => {
                                 >
                                     TESTBUTTON
                                 </button>
-                            </li>
+                            </li> */}
                         </ul>
                     </div>
                 </Col>

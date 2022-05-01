@@ -58,7 +58,6 @@ const SideBar = () => {
 
     useEffect(() => {
         if (MyNFTlists.length !== 0) {
-            setLoading(false);
             let rareD;
             if (MyNFTlists.filter((v) => v.formInput.rare === "5").length >= 3) {
                 rareD = 3;
@@ -138,7 +137,7 @@ const SideBar = () => {
                     setNicName(res.data.nick);
                     setEmail(res.data.email);
                     setImageURL(res.data.image);
-                    setLoading(null);
+                    setLoading(false);
                 })
                 .catch((err) => {
                     console.log(err);
