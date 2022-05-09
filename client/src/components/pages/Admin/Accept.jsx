@@ -26,7 +26,7 @@ const Accept = (props) => {
   useEffect(async () => {
     if (account !== null) {
       await axios
-        .post(`http://15.165.17.43:5000/game/ranking`, { address: account })
+        .post(`https://15.165.17.43:5000/game/ranking`, { address: account })
         .then(async (response) => {
           const data = await response.data;
           setRankingDB(data);
@@ -36,7 +36,7 @@ const Accept = (props) => {
 
   async function checkApprove(address) {
     const result = await axios
-      .post(`http://15.165.17.43:5000/game/getclaim`, { address: address })
+      .post(`https://15.165.17.43:5000/game/getclaim`, { address: address })
       .then((res) => res.data.message);
     return await result;
   }
@@ -52,7 +52,7 @@ const Accept = (props) => {
         .send({ from: account, gas: 3000000 })
         .then(() => {
           axios
-            .post(`http://15.165.17.43:5000/game/setclaim`, {
+            .post(`https://15.165.17.43:5000/game/setclaim`, {
               address: address,
               claim: true,
             })

@@ -95,7 +95,7 @@ const Modal = (props) => {
             )
             .then(async (res) => {
               await axios
-                .post(`http://15.165.17.43:5000/history`, {
+                .post(`https://15.165.17.43:5000/history`, {
                   tokenId: res.events.GetNFTResult.returnValues.tokenId,
                   from: res.events.GetNFTResult.returnValues.from,
                   to: res.events.GetNFTResult.returnValues.to,

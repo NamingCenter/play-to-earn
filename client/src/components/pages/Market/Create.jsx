@@ -143,7 +143,7 @@ const Create = () => {
           },
         };
         await axios
-          .post(`http://15.165.17.43:5000/nfts`, {
+          .post(`https://15.165.17.43:5000/nfts`, {
             tokenId: tokenId,
             address: Account,
             img: await meta.image,
