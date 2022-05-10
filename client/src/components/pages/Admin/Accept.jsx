@@ -7,162 +7,203 @@ import { utils } from "ethers";
 
 import "./accept.css";
 const Accept = (props) => {
-    const [rankingDB, setRankingDB] = useState(null);
-    const account = useSelector((state) => state.AppState.account);
-    const networkid = useSelector((state) => state.AppState.networkid);
-    const chainid = useSelector((state) => state.AppState.chainid);
-    const TokenContract = useSelector((state) => state.AppState.AmusementArcadeTokenContract);
-    const TokenClaimContract = useSelector((state) => state.AppState.TokenClaimContract);
-    // const [Loading, setLoading] = useState(false);
-    function sleep(ms) {
-        const wakeUpTime = Date.now() + ms;
-        while (Date.now() < wakeUpTime) {}
-    }
+  const [rankingDB, setRankingDB] = useState(null);
+  const account = useSelector((state) => state.AppState.account);
+  const networkid = useSelector((state) => state.AppState.networkid);
+  const chainid = useSelector((state) => state.AppState.chainid);
+  const TokenContract = useSelector(
+    (state) => state.AppState.AmusementArcadeTokenContract
+  );
+  const TokenClaimContract = useSelector(
+    (state) => state.AppState.TokenClaimContract
+  );
+  // const [Loading, setLoading] = useState(false);
+  function sleep(ms) {
+    const wakeUpTime = Date.now() + ms;
+    while (Date.now() < wakeUpTime) {}
+  }
 
-    useEffect(async () => {
-        if (account !== null) {
-            await axios.post(`http://15.165.17.43:5000/game/ranking`, { address: account }).then(async (response) => {
-                const data = await response.data;
-                setRankingDB(data);
+  useEffect(async () => {
+    if (account !== null) {
+      await axios
+        .post(`https://15.165.17.43:5000/game/ranking`, { address: account })
+        .then(async (response) => {
+          const data = await response.data;
+          setRankingDB(data);
+        });
+    }
+  }, [account]);
+
+  async function checkApprove(address) {
+    const result = await axios
+      .post(`https://15.165.17.43:5000/game/getclaim`, { address: address })
+      .then((res) => res.data.message);
+    return await result;
+  }
+
+  async function setClaim(address, amount) {
+    if (TokenClaimContract !== null) {
+      if (chainid === 1337 ? false : networkid === chainid ? false : true)
+        return alert("네트워크 아이디를 확인하세요");
+      console.log("위");
+      props.setLoading(true);
+      await TokenClaimContract.methods
+        .setClaim(address, utils.parseEther(amount.toString()))
+        .send({ from: account, gas: 3000000 })
+        .then(() => {
+          axios
+            .post(`https://15.165.17.43:5000/game/setclaim`, {
+              address: address,
+              claim: true,
+            })
+            .then((res) => {
+              if (res.data.message === "ok") {
+                // sleep(2000);
+                alert("승인 완료");
+                props.setLoading(false);
+              } else {
+                alert("에러확인");
+                // sleep(2000);
+                props.setLoading(false);
+              }
             });
-        }
-    }, [account]);
-
-    async function checkApprove(address) {
-        const result = await axios.post(`http://15.165.17.43:5000/game/getclaim`, { address: address }).then((res) => res.data.message);
-        return await result;
+        });
+    } else {
+      alert("컨트랙트 로드 실패");
+      props.setLoading(false);
     }
+  }
 
-    async function setClaim(address, amount) {
-        if (TokenClaimContract !== null) {
-            if (chainid === 1337 ? false : networkid === chainid ? false : true) return alert("네트워크 아이디를 확인하세요");
-            console.log("위");
-            console.log(amount);
-            console.log(address);
-            props.setLoading(true);
-            await TokenClaimContract.methods
-                .setClaim(address, utils.parseEther(amount.toString()))
-                .send({ from: account, gas: 3000000 })
-                .then(() => {
-                    axios
-                        .post(`http://15.165.17.43:5000/game/setclaim`, {
-                            address: address,
-                            claim: true,
-                        })
-                        .then((res) => {
-                            if (res.data.message === "ok") {
-                                //sleep(2000);
-                                alert("승인 완료");
-                                props.setLoading(false);
-                            } else {
-                                alert("에러확인");
-                                //sleep(2000);
-                                props.setLoading(false);
-                            }
-                        });
-                });
-        } else {
-            alert("컨트랙트 로드 실패");
-            props.setLoading(false);
-        }
+  function changeCost(index) {
+    switch (index) {
+      case 0:
+        return 2000;
+      case 1:
+        return 1000;
+      case 2:
+        return 500;
     }
+  }
 
-    function changeCost(index) {
-        switch (index) {
-            case 0:
-                return 2000;
-            case 1:
-                return 1000;
-            case 2:
-                return 500;
-        }
+  function winnerTemplate(ranker) {
+    if (rankingDB !== null) {
+      const result = [];
+      for (let i = 0; i < 3; i++) {
+        result.push(
+          <div className="winner__box" key={i}>
+            <p>{ranker[i] !== undefined ? ranker[i].address : "순위없음"}</p>
+            <button
+              className="accept__btn"
+              hidden={
+                ranker[i] !== undefined
+                  ? ranker[i].approve === true
+                    ? true
+                    : false
+                  : false
+              }
+              onClick={async (e) => {
+                if (rankingDB !== null && ranker[i] !== undefined) {
+                  if ((await checkApprove(ranker[i].address)) === false) {
+                    const snakeranker = rankingDB.snakeranker.findIndex(
+                      (data) => data.address === ranker[i].address
+                    );
+                    const tetrisranker = rankingDB.tetrisranker.findIndex(
+                      (data) => data.address === ranker[i].address
+                    );
+                    const puzzleranker = rankingDB.puzzleranker.findIndex(
+                      (data) => data.address === ranker[i].address
+                    );
+                    const mineranker = rankingDB.mineranker.findIndex(
+                      (data) => data.address === ranker[i].address
+                    );
+                    const result =
+                      (snakeranker !== -1 ? changeCost(snakeranker) : 0) +
+                      (tetrisranker !== -1 ? changeCost(tetrisranker) : 0) +
+                      (puzzleranker !== -1 ? changeCost(puzzleranker) : 0) +
+                      (mineranker !== -1 ? changeCost(mineranker) : 0);
+
+                    setClaim(ranker[i].address, result).then(() => {
+                      e.target.setAttribute("hidden", "true");
+                    });
+                  } else {
+                    alert("승인이 완료된 유저입니다.");
+                    e.target.setAttribute("hidden", "true");
+                  }
+                }
+              }}
+            >
+              signed
+            </button>
+          </div>
+        );
+      }
+      return result;
+    } else {
+      <p>로딩중...</p>;
     }
+  }
 
-    function winnerTemplate(ranker) {
-        if (rankingDB !== null) {
-            const result = [];
-            for (let i = 0; i < 3; i++) {
-                result.push(
-                    <div className="winner__box" key={i}>
-                        <p>{ranker[i] !== undefined ? ranker[i].address : "순위없음"}</p>
-                        <button
-                            className="accept__btn"
-                            hidden={ranker[i] !== undefined ? (ranker[i].approve === true ? true : false) : false}
-                            onClick={async (e) => {
-                                if (rankingDB !== null && ranker[i] !== undefined) {
-                                    if ((await checkApprove(ranker[i].address)) === false) {
-                                        const snakeranker = await rankingDB.snakeranker.findIndex((data) => data.address === ranker[i].address);
-                                        const tetrisranker = await rankingDB.tetrisranker.findIndex((data) => data.address === ranker[i].address);
-                                        const puzzleranker = await rankingDB.puzzleranker.findIndex((data) => data.address === ranker[i].address);
-                                        const mineranker = await rankingDB.mineranker.findIndex((data) => data.address === ranker[i].address);
-                                        const result = ((await snakeranker) !== -1 ? changeCost(snakeranker) : 0) + ((await tetrisranker) !== -1 ? changeCost(tetrisranker) : 0) + ((await puzzleranker) !== -1 ? changeCost(puzzleranker) : 0) + ((await mineranker) !== -1 ? changeCost(mineranker) : 0);
-
-                                        setClaim(ranker[i].address, result).then(() => {
-                                            e.target.setAttribute("hidden", "true");
-                                        });
-                                    } else {
-                                        alert("승인이 완료된 유저입니다.");
-                                        e.target.setAttribute("hidden", "true");
-                                    }
-                                }
-                            }}
-                        >
-                            signed
-                        </button>
-                    </div>
-                );
-            }
-            return result;
-        } else {
-            <p>로딩중...</p>;
-        }
-    }
-
-    return (
-        <div className="admin__card">
-            <div className="carousel__con">
-                <Carousel itemsToShow={1}>
-                    <div className="winner__card" numbers="1">
-                        <div className="winner__content">
-                            <div className="winner__chart">{/* Snake */}</div>
-                            <div className="earing__text">
-                                <div className="token__mybox">Snake Game Winner</div>
-                                {rankingDB !== null ? winnerTemplate(rankingDB.snakeranker) : <p>로딩중...</p>}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="winner__card" numbers="2">
-                        <div className="winner__content">
-                            <div className="winner__chart">{/* Tetris */}</div>
-                            <div className="earing__text">
-                                <div className="token__mybox">Tetris Game Winner</div>
-                                {rankingDB !== null ? winnerTemplate(rankingDB.tetrisranker) : <p>로딩중...</p>}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="winner__card" numbers="3">
-                        <div className="winner__content">
-                            <div className="winner_chart">{/* 2048 */}</div>
-                            <div className="earing__text">
-                                <div className="token__mybox">2048 Game Winner</div>
-                                {rankingDB !== null ? winnerTemplate(rankingDB.puzzleranker) : <p>로딩중...</p>}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="winner__card" numbers="4">
-                        <div className="winner__content">
-                            <div className="winner__chart">{/* Minesweeper */}</div>
-                            <div className="earing__text">
-                                <div className="token__mybox">Minesweeper Game Winner</div>
-                                {rankingDB !== null ? winnerTemplate(rankingDB.mineranker) : <p>로딩중...</p>}
-                            </div>
-                        </div>
-                    </div>
-                </Carousel>
+  return (
+    <div className="admin__card">
+      <div className="carousel__con">
+        <Carousel itemsToShow={1}>
+          <div className="winner__card" numbers="1">
+            <div className="winner__content">
+              <div className="winner__chart">{/* Snake */}</div>
+              <div className="earing__text">
+                <div className="token__mybox">Snake Game Winner</div>
+                {rankingDB !== null ? (
+                  winnerTemplate(rankingDB.snakeranker)
+                ) : (
+                  <p>로딩중...</p>
+                )}
+              </div>
             </div>
-        </div>
-    );
+          </div>
+          <div className="winner__card" numbers="2">
+            <div className="winner__content">
+              <div className="winner__chart">{/* Tetris */}</div>
+              <div className="earing__text">
+                <div className="token__mybox">Tetris Game Winner</div>
+                {rankingDB !== null ? (
+                  winnerTemplate(rankingDB.tetrisranker)
+                ) : (
+                  <p>로딩중...</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="winner__card" numbers="3">
+            <div className="winner__content">
+              <div className="winner_chart">{/* 2048 */}</div>
+              <div className="earing__text">
+                <div className="token__mybox">2048 Game Winner</div>
+                {rankingDB !== null ? (
+                  winnerTemplate(rankingDB.puzzleranker)
+                ) : (
+                  <p>로딩중...</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="winner__card" numbers="4">
+            <div className="winner__content">
+              <div className="winner__chart">{/* Minesweeper */}</div>
+              <div className="earing__text">
+                <div className="token__mybox">Minesweeper Game Winner</div>
+                {rankingDB !== null ? (
+                  winnerTemplate(rankingDB.mineranker)
+                ) : (
+                  <p>로딩중...</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </Carousel>
+      </div>
+    </div>
+  );
 };
 
 export default Accept;
