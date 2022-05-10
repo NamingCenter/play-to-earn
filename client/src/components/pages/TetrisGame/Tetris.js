@@ -83,7 +83,7 @@ const Tetris = (props, { setShowModal }) => {
 
   useEffect(async () => {
     const tetrisData = await axios.post(
-      `https://15.165.17.43:5000/game/tetrisScore`,
+      `http://15.165.17.43:5000/game/tetrisScore`,
       { account: account }
     );
     if (tetrisData.data !== null) {
@@ -308,7 +308,7 @@ const Tetris = (props, { setShowModal }) => {
         return starD;
       }
 
-      const tetrisData = await axios.post(`https://15.165.17.43:5000/game/tetris`, {
+      const tetrisData = await axios.post(`http://15.165.17.43:5000/game/tetris`, {
         data: data * (test() * jest()),
         account: account,
       });
