@@ -11,7 +11,7 @@ const MyLikes = () => {
 
   const getLike = async () => {
     await axios
-      .post(`http://15.165.17.43:5000/nfts/likes`, {
+      .post(`http://3.39.230.11:5000/nfts/likes`, {
         account: account,
       })
       .then((res) => {

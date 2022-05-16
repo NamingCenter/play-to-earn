@@ -87,7 +87,7 @@ const EditProfile = (props) => {
     if (seletedImg !== null) {
       props.setImageURL(seletedImg);
       await axios
-        .post("http://15.165.17.43:5000/user/img", {
+        .post("http://3.39.230.11:5000/user/img", {
           address: Account,
           image: seletedImg,
         })
