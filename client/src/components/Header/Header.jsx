@@ -143,7 +143,7 @@ const Header = () => {
       setLibrary(library);
       setChainId(network);
       await axios
-        .post("https://15.165.17.43:5000/user/login", {
+        .post("http://localhost:5000/user/login", {
           address: selectAccount,
           owner: Owner,
         })
@@ -203,7 +203,7 @@ const Header = () => {
         if (accounts.length !== 0) {
           const getAddress = utils.getAddress(accounts[0]);
           await axios
-            .post("https://15.165.17.43:5000/user/login", {
+            .post("http://localhost:5000/user/login", {
               address: getAddress,
               owner: Owner,
             })
